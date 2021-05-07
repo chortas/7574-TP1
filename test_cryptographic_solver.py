@@ -32,3 +32,4 @@ class TestCryptographicSolver:
         block.hash.return_value = 2**255
         block.get_difficulty.return_value = 2
         assert not cryptographic_solver.solve(block)
+        

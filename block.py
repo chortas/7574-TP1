@@ -24,7 +24,7 @@ class Block:
 
     def set_timestamp(self, timestamp):
         self.header['timestamp'] = timestamp
-
+        
     def add_nonce(self):
         self.header['nonce'] += 1
 

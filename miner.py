@@ -1,15 +1,16 @@
 import datetime
+from cryptographic_solver import CryptographicSolver
 
-# It should have a thread mining and a thread listening whether it needs to stop mining the thread
+# It should have a thread mining and a thread listening whether it needs to stop mining the block
 
 class Miner:
-    def isCryptographicPuzzleSolved(block):
-        return block.hash() < (2**256) / block.get_difficulty() - 1
+    def __init__(self):
+        self.cryptographic_solver = CryptographicSolver()
 
-    def mine(prev_hash, block):
+    def mine(self, prev_hash, block):
         block.set_prev_hash(prev_hash)
         block.set_timestamp(datetime.datetime.now())
-        while not isCryptographicPuzzleSolved(block):
+        while not self.cryptographic_solver.solve(block):
             block.add_nonce()
             block.set_timestamp(datetime.datetime.now())
             
