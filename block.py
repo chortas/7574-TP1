@@ -8,7 +8,7 @@ class Block:
         self.header = {
             'prev_hash': 0,
             'nonce': 0,
-            'timestamp': None,
+            'timestamp': datetime.now(),
             'entries_amount': len(entries),
             'difficulty': 1
         }
@@ -49,6 +49,9 @@ class Block:
     
     def get_day(self):
         return self.header['timestamp'].strftime("%m/%d/%Y")
+
+    def add_entry(self, entry):
+        self.entries.append(entry)
 
     def __str__(self):
         entries = ",".join(self.entries)
