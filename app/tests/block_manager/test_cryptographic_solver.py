@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock
 from common.block import Block
-from mining.cryptographic_solver import CryptographicSolver
+from block_manager.cryptographic_solver import CryptographicSolver
 
 class TestCryptographicSolver:
 

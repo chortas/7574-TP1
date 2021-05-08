@@ -1,0 +1,9 @@
+version: '3'
+services:
+  block_manager:
+    container_name: block_manager
+    image: block_manager:latest
+    entrypoint: python3 /main.py
+    environment:
+        - N_MINERS=5
+  
