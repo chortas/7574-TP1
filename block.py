@@ -24,7 +24,7 @@ class Block:
 
     def set_timestamp(self, timestamp):
         self.header['timestamp'] = timestamp
-        
+
     def add_nonce(self):
         self.header['nonce'] += 1
 
@@ -33,6 +33,18 @@ class Block:
 
     def get_prev_hash(self):
         return self.header['prev_hash']
+    
+    def get_nonce(self):
+        return self.header['nonce']
+    
+    def get_timestamp(self):
+        return self.header['timestamp']
+    
+    def get_entries_amount(self):
+        return self.header['entries_amount'] 
+    
+    def get_entries(self):
+        return self.entries
 
     def __str__(self):
         entries = ",".join(self.entries)
