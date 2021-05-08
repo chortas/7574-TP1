@@ -18,10 +18,11 @@ class TestBlock:
         block = Block([])
         timestamp = datetime(2020, 5, 17, 22, 30)
         block.set_timestamp(timestamp)
-        assert block.get_day() == '05/17/2020'
+        assert block.get_day() == '05-17-2020'
 
     def test_add_entry(self):
         block = Block([])
         assert block.get_entries() == []
         block.add_entry('entry')
         assert block.get_entries() == ['entry']
+        assert block.get_entries_amount() == 1

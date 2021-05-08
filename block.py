@@ -48,10 +48,11 @@ class Block:
         return self.entries
     
     def get_day(self):
-        return self.header['timestamp'].strftime("%m/%d/%Y")
+        return self.header['timestamp'].strftime("%m-%d-%Y")
 
     def add_entry(self, entry):
         self.entries.append(entry)
+        self.header['entries_amount'] += 1
 
     def __str__(self):
         entries = ",".join(self.entries)
