@@ -1,1 +1,7 @@
 app/__pycache__/
+app/blockchain/__pycache__/
+app/common/__pycache__/
+app/mining/__pycache__/
+app/stats/__pycache__/
+app/tests/__pycache__/
+app/tests/stats/__pycache__/
