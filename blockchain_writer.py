@@ -18,18 +18,11 @@ class BlockchainWriter:
             writer = csv.DictWriter(block_file, fieldnames=fieldnames)
             
             writer.writeheader()
-            writer.writerow({'hash': block.hash(), 
-                            'prev_hash': block.get_prev_hash(), 
-                            'nonce': block.get_nonce(), 
-                            'timestamp': block.get_timestamp(), 
-                            'entries_amount': block.get_entries_amount(), 
-                            'difficulty': block.get_difficulty(), 
-                            'entries': block.get_entries()
-                            })
+            writer.writerow(block.serialize_into_dict())
 
     def __write_day_file(self, file_name, block):
         exists = os.path.exists(file_name)
-        
+
         with open(file_name, mode='a') as block_file:
             fieldnames = ['hash', 'timestamp']
             writer = csv.DictWriter(block_file, fieldnames=fieldnames)

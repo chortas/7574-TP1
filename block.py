@@ -4,14 +4,17 @@ from datetime import datetime
 MAX_ENTRIES_AMOUNT = 256
 
 class Block: 
-    def __init__(self, entries):
-        self.header = {
-            'prev_hash': 0,
-            'nonce': 0,
-            'timestamp': datetime.now(),
-            'entries_amount': len(entries),
-            'difficulty': 1
-        }
+    def __init__(self, entries, header={}):
+        if header != {}:
+            self.header = header
+        else:
+            self.header = {
+                'prev_hash': 0,
+                'nonce': 0,
+                'timestamp': datetime.now(),
+                'entries_amount': len(entries),
+                'difficulty': 1
+            }
         if (len(entries) > MAX_ENTRIES_AMOUNT):
             raise ValueError("Exceeding chunk size")
         
@@ -53,6 +56,16 @@ class Block:
     def add_entry(self, entry):
         self.entries.append(entry)
         self.header['entries_amount'] += 1
+
+    def serialize_into_dict(self):
+        return {'hash': self.hash(), 
+                'prev_hash': self.get_prev_hash(), 
+                'nonce': self.get_nonce(), 
+                'timestamp': self.get_timestamp(), 
+                'entries_amount': self.get_entries_amount(), 
+                'difficulty': self.get_difficulty(), 
+                'entries': "-".join(self.get_entries())
+                }
 
     def __str__(self):
         entries = ",".join(self.entries)

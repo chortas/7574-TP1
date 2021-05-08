@@ -29,10 +29,12 @@ class TestBlockchainWriter:
     def test_write_block_ok(self):
         prev_hash = 12
         entry = 'entry'
+        other_entry ='other entry'
 
         self.block.set_prev_hash(prev_hash)
         self.block.add_nonce()
         self.block.add_entry(entry)
+        self.block.add_entry(other_entry)
 
         blockchain_writer = BlockchainWriter()
         blockchain_writer.write_block(self.block)
@@ -47,9 +49,9 @@ class TestBlockchainWriter:
                 assert row['prev_hash'] == str(prev_hash)
                 assert row['nonce'] == str(1) 
                 assert row['timestamp'] == str(self.timestamp)
-                assert row['entries_amount'] == str(1)
+                assert row['entries_amount'] == str(2)
                 assert row['difficulty'] == str(1)
-                assert row['entries'] == str([entry])
+                assert row['entries'] == entry + '-' + other_entry
 
         with open(day_file_name, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
