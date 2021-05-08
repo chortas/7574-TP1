@@ -5,3 +5,6 @@ app/block_manager/__pycache__/
 app/stats/__pycache__/
 app/tests/__pycache__/
 app/tests/stats/__pycache__/
+app/tests/block_manager/__pycache__/
+app/tests/blockchain/__pycache__/
+app/tests/common/__pycache__/
