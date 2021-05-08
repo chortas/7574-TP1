@@ -1,4 +1,5 @@
 from hashlib import sha256
+from datetime import datetime
 
 MAX_ENTRIES_AMOUNT = 256
 
@@ -45,6 +46,9 @@ class Block:
     
     def get_entries(self):
         return self.entries
+    
+    def get_day(self):
+        return self.header['timestamp'].strftime("%m/%d/%Y")
 
     def __str__(self):
         entries = ",".join(self.entries)

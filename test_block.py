@@ -1,5 +1,6 @@
 import pytest
 from block import Block
+from datetime import datetime
 
 class TestBlock:
     def test_prev_hash(self):
@@ -13,3 +14,8 @@ class TestBlock:
         with pytest.raises(ValueError, match='Exceeding chunk size'):
             block = Block(entries)
     
+    def test_get_right_day(self):
+        block = Block([])
+        timestamp = datetime(2020, 5, 17, 22, 30)
+        block.set_timestamp(timestamp)
+        assert block.get_day() == '05/17/2020'
