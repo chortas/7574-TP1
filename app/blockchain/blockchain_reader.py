@@ -1,7 +1,7 @@
 import csv
 import os
 from datetime import datetime, timedelta
-from block import Block
+from common.block import Block
 
 class BlockchainReader:
     def get_block(self, block_hash):
