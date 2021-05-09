@@ -23,13 +23,17 @@ class Miner(Thread):
             print(f"Me pidieron que frene y soy el minero {self.id}")
             self.stop_queue.get()
             self.result_queue.put(False)
+        
+        else:
+            self.result_queue.put(True) # TODO: put blockchain result here and send to stats
 
         # to know prev_hash() for future interactions
         return block.hash()
 
     def run(self):
-        while True:
+        for i in range(2):
             block = self.block_queue.get()
             block_hash = self.mine(block)
-            self.result_queue.put(True) # TODO: put blockchain result here and send to stats
-            break # TODO: delete this when its done and send this to blockchain manager
+            print("TASK DONE")
+            self.block_queue.task_done()
+             # TODO: delete this when its done and send this to blockchain manager

@@ -19,15 +19,15 @@ class BlockManager:
         print(f"Voy a mandar el bloque {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
+            block_queue.join()
 
     def start_threads(self):
         for i in range(self.n_miners):
             self.miners[i].start()
             self.receiver_results[i].start()
-            time.sleep(2)
 
     def receive_results(self, id_miner):
-        while True:
+        for i in range(2):
             # listen result from result_queues
             could_mine = self.result_queues[id_miner].get()
             if could_mine:
@@ -35,7 +35,6 @@ class BlockManager:
                 self.stop_miners_except(id_miner)
             else:
                 print(f"El minero {id_miner} no pudo minar")
-            break
     
     def stop_miners_except(self, id_miner):
         for i in range(self.n_miners):

@@ -22,6 +22,9 @@ def main():
     block_manager = BlockManager(config_params["n_miners"])
     block = Block([])
     block_manager.send_block(block)
+    other_block = Block([])
+    block_manager.send_block(other_block)
+
     block_manager.join()
 
 def initialize_log():
