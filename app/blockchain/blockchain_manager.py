@@ -2,6 +2,7 @@ import socket
 import json
 from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
+from blockchain_writer import BlockchainWriter
 from sockets.utils import *
 
 class BlockchainManager:
@@ -9,6 +10,7 @@ class BlockchainManager:
         self.blocks = []
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
+        self.blockchain_writer = BlockchainWriter()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((socket_host, socket_port))
         self.socket.listen(1)
@@ -16,19 +18,11 @@ class BlockchainManager:
     def receive_blocks(self):
         #TODO: this should be a while true loop
 
-        print('[BLOCKCHAIN_MANAGER] Socket now listening')
-
-        miner_socket = accept_new_connection(self.socket)
-        print(f'[BLOCKCHAIN_MANAGER] Connected with {miner_socket}')
-        self.__handle_miner_connection(miner_socket)
-
-        second_miner_socket = accept_new_connection(self.socket)
-        print(f'[BLOCKCHAIN_MANAGER] Connected with {second_miner_socket}')
-        self.__handle_miner_connection(second_miner_socket)
-
-        third_miner_socket = accept_new_connection(self.socket)
-        print(f'[BLOCKCHAIN_MANAGER] Connected with {third_miner_socket}')
-        self.__handle_miner_connection(third_miner_socket)
+        while True:
+            print('[BLOCKCHAIN_MANAGER] Socket now listening')
+            miner_socket = accept_new_connection(self.socket)
+            print(f'[BLOCKCHAIN_MANAGER] Connected with {miner_socket}')
+            self.__handle_miner_connection(miner_socket)
 
     def __handle_miner_connection(self, miner_socket):
         """
@@ -56,6 +50,7 @@ class BlockchainManager:
         if (self.is_block_valid(new_block)):
             self.blocks.append(new_block)
             self.last_block_hash = new_block.hash()
+            self.blockchain_writer.write_block(new_block) #TODO: see if this could be in a different thread
             return True
         return False
     
