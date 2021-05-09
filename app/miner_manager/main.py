@@ -2,7 +2,7 @@
 import logging
 import os
 from common.block import Block
-from block_manager import BlockManager
+from miner_manager import MinerManager
 
 def parse_config_params():
     config_params = {}
@@ -26,11 +26,11 @@ def main():
     blockchain_host = config_params["blockchain_host"]
     blockchain_port = config_params["blockchain_port"]
 
-    block_manager = BlockManager(n_miners, blockchain_host, blockchain_port)
+    miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port)
     
     for i in range(5):
         block = Block([])
-        block_manager.send_block(block)
+        miner_manager.send_block(block)
 
 def initialize_log():
     """

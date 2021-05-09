@@ -8,7 +8,7 @@ import time
 import logging
 from random import shuffle
 
-class BlockManager:
+class MinerManager:
     def __init__(self, n_miners, blockchain_host, blockchain_port):
         self.n_miners = n_miners
         self.block_queues = [Queue() for _ in range(n_miners)]
