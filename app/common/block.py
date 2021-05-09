@@ -1,5 +1,6 @@
 from hashlib import sha256
 from datetime import datetime
+import json
 
 MAX_ENTRIES_AMOUNT = 256
 
@@ -61,11 +62,14 @@ class Block:
         return {'hash': self.hash(), 
                 'prev_hash': self.get_prev_hash(), 
                 'nonce': self.get_nonce(), 
-                'timestamp': self.get_timestamp(), 
+                'timestamp': str(self.get_timestamp()), 
                 'entries_amount': self.get_entries_amount(), 
                 'difficulty': self.get_difficulty(), 
                 'entries': "-".join(self.get_entries())
                 }
+
+    def serialize(self):
+        return json.dumps(self.serialize_into_dict())
 
     def __str__(self):
         entries = ",".join(self.entries)

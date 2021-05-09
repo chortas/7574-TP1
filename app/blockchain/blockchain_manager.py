@@ -13,7 +13,7 @@ class BlockchainManager:
 
     def receive_blocks(self):
         #TODO: this should be a while true loop
-        
+
         print('[BLOCKCHAIN_MANAGER] Socket now listening')
 
         miner_socket = accept_new_connection(self.socket)
@@ -31,7 +31,7 @@ class BlockchainManager:
         miner socket will also be closed
         """
         try:
-            msg = miner_socket.recv(8).rstrip()
+            msg = bytes_4_to_number(miner_socket.recv(NUM_PARAM_BYTES))
             print(f'Message received from connection. Msg: {msg}')
         except OSError:
             logging.info("Error while reading socket {}".format(miner_socket))

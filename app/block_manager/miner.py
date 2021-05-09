@@ -38,8 +38,9 @@ class Miner(Thread):
             result_mining = self.mine(block)
             if result_mining:
                 miner_socket = create_and_connect(self.blockchain_host, self.blockchain_port)
-
-                miner_socket.send('1'.encode('utf-8'))
+                block_serialized = block.serialize()
+                print(f"Quiero mandar el len: {len(block_serialized)}")
+                miner_socket.send(number_to_4_bytes(len(block_serialized)))
                 # envio el bloque a la blockchain
                 # recibo el hash si pudo o la negativa si no pudo
                 # escribo el resultado en la cola
