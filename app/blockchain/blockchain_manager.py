@@ -16,12 +16,9 @@ class BlockchainManager:
         self.socket.listen(1)
 
     def receive_blocks(self):
-        #TODO: this should be a while true loop
-
         while True:
-            print('[BLOCKCHAIN_MANAGER] Socket now listening')
             miner_socket = accept_new_connection(self.socket)
-            print(f'[BLOCKCHAIN_MANAGER] Connected with {miner_socket}')
+            logging.info(f'[BLOCKCHAIN_MANAGER] Connected with {miner_socket}')
             self.__handle_miner_connection(miner_socket)
 
     def __handle_miner_connection(self, miner_socket):
@@ -32,7 +29,7 @@ class BlockchainManager:
         """
         try:
             block_serialized = recv_data(miner_socket)
-            print(f'Block serialized: {block_serialized} - type: {type(block_serialized)}')
+            logging.info(f'Block serialized: {block_serialized}')
             block = Block.deserialize(block_serialized)
             result = {}
             if self.add_block(block):

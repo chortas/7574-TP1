@@ -30,7 +30,7 @@ class Miner(Thread):
             block.set_timestamp(get_and_format_datetime_now())
         
         if not self.stop_queue.empty():
-            print(f"Me pidieron que frene y soy el minero {self.id}")
+            logging.info(f"I was asked to stop and i'm the miner {self.id}")
             self.stop_queue.get()
             self.result_queue.put(False)
             self.stats_writer.add_stat(self.id, False)
@@ -45,24 +45,23 @@ class Miner(Thread):
             if is_mine_ok:
                 miner_socket = create_and_connect(self.blockchain_host, self.blockchain_port)
                 block_serialized = block.serialize()
-                print(f"Quiero mandar el len: {len(block_serialized)}")
                 
                 # send block to blockchain
                 send_data(block_serialized, miner_socket)
 
                 # receive result
                 result = json.loads(recv_data(miner_socket))
-                print(f"Resultado recibido: {result}")
+                logging.info(f"Result: {result}")
 
                 # write result in result_queue
                 if result["result"] == "OK":
-                    print(f"Soy el minero {self.id} y pude minar!")
+                    logging.info(f"I'm the miner {self.id} and I could mine!")
                     self.result_queue.put(True)
                     hash_obtained = result["hash"]
                     self.prev_hash_queue.put(hash_obtained)
                     self.stats_writer.add_stat(self.id, True)
                 else:
-                    print(f"Soy el minero {self.id} y no pude minar!")
+                    logging.info(f"I'm the miner {self.id} and I couldn't mine!")
                     self.result_queue.put(False)
                     self.stats_writer.add_stat(self.id, False)
 

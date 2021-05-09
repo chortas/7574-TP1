@@ -4,6 +4,7 @@ from threading import Thread
 from stats.stats_writer import StatsWriter
 
 import time
+import logging
 
 class BlockManager:
     def __init__(self, n_miners, blockchain_host, blockchain_port):
@@ -22,7 +23,7 @@ class BlockManager:
 
     def send_block(self, block):
         block.set_prev_hash(self.prev_hash)
-        print(f"Voy a mandar el bloque {block}")
+        logging.info(f"I'm about to send the block: {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
             block_queue.join()
@@ -37,11 +38,11 @@ class BlockManager:
             # listen result from result_queues
             could_mine = self.result_queues[id_miner].get()
             if could_mine:
-                print(f"El minero {id_miner} pudo minar")
+                logging.info(f"El minero {id_miner} pudo minar")
                 self.stop_miners_except(id_miner)
                 self.prev_hash = self.prev_hash_queues[id_miner].get()
             else:
-                print(f"El minero {id_miner} no pudo minar")
+                logging.info(f"El minero {id_miner} no pudo minar")
     
     def stop_miners_except(self, id_miner):
         for i in range(self.n_miners):

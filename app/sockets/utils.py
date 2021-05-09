@@ -1,4 +1,5 @@
 import socket
+import logging
 
 NUM_PARAM_BYTES = 4
 
@@ -14,9 +15,9 @@ def accept_new_connection(socket):
     Then connection created is printed and returned
     """
 
-    print("Proceed to accept new connections")
+    logging.info("Proceed to accept new connections")
     conn, addr = socket.accept()
-    print('Got connection from {}'.format(addr))
+    logging.info('Got connection from {}'.format(addr))
     return conn
 
 def close(sock):
@@ -45,5 +46,4 @@ def send_data(data, socket):
 
 def recv_data(socket):
     data_len = bytes_4_to_number(socket.recv(NUM_PARAM_BYTES))
-    print(f'Data len: {data_len}')
     return socket.recv(data_len).decode()
