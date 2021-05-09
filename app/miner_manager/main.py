@@ -3,6 +3,7 @@ import logging
 import os
 from common.block import Block
 from miner_manager import MinerManager
+from block_builder import BlockBuilder
 
 def parse_config_params():
     config_params = {}
@@ -27,11 +28,16 @@ def main():
     blockchain_port = config_params["blockchain_port"]
 
     miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port)
+    block_builder = BlockBuilder()
+
+    block = None
+
+    for i in range(256):
+        block = block_builder.add_chunk(str(i))
     
     for i in range(5):
-        block = Block([])
         miner_manager.send_block(block)
-
+    
 def initialize_log():
     """
     Python custom logging initialization
