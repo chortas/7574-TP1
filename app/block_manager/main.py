@@ -28,7 +28,7 @@ def main():
 
     block_manager = BlockManager(n_miners, blockchain_host, blockchain_port)
     
-    for i in range(1000):
+    for i in range(5):
         block = Block([])
         block_manager.send_block(block)
 

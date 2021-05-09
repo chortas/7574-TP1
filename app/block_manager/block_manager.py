@@ -26,8 +26,6 @@ class BlockManager:
     def send_block(self, block):
         block.set_prev_hash(self.prev_hash)
         block.set_difficulty(self.difficulty_adjuster.get_difficulty())
-        logging.info(f"La dificultad del bloque que estoy por mandar es: {block.get_difficulty()}")
-        logging.info(f"I'm about to send the block: {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
             block_queue.join()
