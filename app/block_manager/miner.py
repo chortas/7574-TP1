@@ -3,6 +3,7 @@ from common.cryptographic_solver import CryptographicSolver
 from threading import Thread
 import socket
 from sockets.utils import *
+from common.utils import *
 
 # It should have a thread mining and a thread listening whether it needs to stop mining the block
 
@@ -18,10 +19,10 @@ class Miner(Thread):
         self.blockchain_port = blockchain_port
 
     def mine(self, block):
-        block.set_timestamp(datetime.datetime.now())
+        block.set_timestamp(get_and_format_datetime_now())
         while not self.cryptographic_solver.solve(block) and not self.stop_queue.empty():
             block.add_nonce()
-            block.set_timestamp(datetime.datetime.now())
+            block.set_timestamp(get_and_format_datetime_now())
         
         if not self.stop_queue.empty():
             print(f"Me pidieron que frene y soy el minero {self.id}")
@@ -41,6 +42,7 @@ class Miner(Thread):
                 block_serialized = block.serialize()
                 print(f"Quiero mandar el len: {len(block_serialized)}")
                 miner_socket.send(number_to_4_bytes(len(block_serialized)))
+                miner_socket.send(block_serialized.encode())
                 # envio el bloque a la blockchain
                 # recibo el hash si pudo o la negativa si no pudo
                 # escribo el resultado en la cola

@@ -1,5 +1,6 @@
 from hashlib import sha256
 from datetime import datetime
+from common.utils import *
 import json
 
 MAX_ENTRIES_AMOUNT = 256
@@ -12,7 +13,7 @@ class Block:
             self.header = {
                 'prev_hash': 0,
                 'nonce': 0,
-                'timestamp': datetime.now(),
+                'timestamp': get_and_format_datetime_now(),
                 'entries_amount': len(entries),
                 'difficulty': 1
             }
@@ -52,7 +53,7 @@ class Block:
         return self.entries
     
     def get_day(self):
-        return self.header['timestamp'].strftime("%m-%d-%Y")
+        return self.header['timestamp'].strftime(DATE_FORMAT)
 
     def add_entry(self, entry):
         self.entries.append(entry)
@@ -70,6 +71,19 @@ class Block:
 
     def serialize(self):
         return json.dumps(self.serialize_into_dict())
+    
+    @classmethod
+    def deserialize(cls, json_to_deserialize):
+        json_data = json.loads(json_to_deserialize)
+        header = {
+                    'prev_hash': int(json_data['prev_hash']), 
+                    'nonce': int(json_data['nonce']),
+                    'timestamp': datetime.strptime(json_data['timestamp'], FULL_DATE_FORMAT),
+                    'entries_amount': int(json_data['entries_amount']),
+                    'difficulty': int(json_data['difficulty'])
+                }
+        entries = json_data['entries'].split('-')
+        return cls(entries, header=header)
 
     def __str__(self):
         entries = ",".join(self.entries)

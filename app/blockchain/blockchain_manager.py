@@ -1,4 +1,5 @@
 import socket
+from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
 from sockets.utils import *
 
@@ -31,8 +32,13 @@ class BlockchainManager:
         miner socket will also be closed
         """
         try:
-            msg = bytes_4_to_number(miner_socket.recv(NUM_PARAM_BYTES))
-            print(f'Message received from connection. Msg: {msg}')
+            block_len = bytes_4_to_number(miner_socket.recv(NUM_PARAM_BYTES))
+            print(f'Block len: {block_len}')
+            block_serialized = miner_socket.recv(block_len).decode()
+            print(f'Block serialized: {block_serialized} - type: {type(block_serialized)}')
+            block = Block.deserialize(block_serialized)
+            print(f"Block: {block}")
+
         except OSError:
             logging.info("Error while reading socket {}".format(miner_socket))
         finally:

@@ -18,7 +18,7 @@ class TestBlock:
         block = Block([])
         timestamp = datetime(2020, 5, 17, 22, 30)
         block.set_timestamp(timestamp)
-        assert block.get_day() == '05-17-2020'
+        assert block.get_day() == '2020-05-17'
 
     def test_add_entry(self):
         block = Block([])

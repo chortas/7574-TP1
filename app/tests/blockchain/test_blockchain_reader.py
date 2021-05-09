@@ -72,7 +72,7 @@ class TestBlockchainReader:
                             'entries': 'entry-other entry'
                             })
         
-        with open('05-17-2020.csv', mode='w') as block_file:
+        with open('2020-05-17.csv', mode='w') as block_file:
             fieldnames = ['hash', 'timestamp']
             writer = csv.DictWriter(block_file, fieldnames=fieldnames)
             
@@ -96,7 +96,7 @@ class TestBlockchainReader:
         assert block.get_entries() == block_entries
 
         os.remove('1.csv')
-        os.remove('05-17-2020.csv')
+        os.remove('2020-05-17.csv')
     
     def test_get_no_block_by_interval(self):
         block_hash = 1
@@ -120,7 +120,7 @@ class TestBlockchainReader:
                             'entries': 'entry-other entry'
                             })
         
-        with open('05-17-2020.csv', mode='w') as block_file:
+        with open('2020-05-17.csv', mode='w') as block_file:
             fieldnames = ['hash', 'timestamp']
             writer = csv.DictWriter(block_file, fieldnames=fieldnames)
             
@@ -177,7 +177,7 @@ class TestBlockchainReader:
                             })
             
 
-        with open('05-17-2020.csv', mode='w') as block_file:
+        with open('2020-05-17.csv', mode='w') as block_file:
             fieldnames = ['hash', 'timestamp']
             writer = csv.DictWriter(block_file, fieldnames=fieldnames)
             
@@ -213,5 +213,5 @@ class TestBlockchainReader:
 
         os.remove('1.csv')
         os.remove('2.csv')
-        os.remove('05-17-2020.csv')
+        os.remove('2020-05-17.csv')
     

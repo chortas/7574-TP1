@@ -2,6 +2,7 @@ import csv
 import os
 from datetime import datetime, timedelta
 from common.block import Block
+from common.utils import *
 
 class BlockchainReader:
     def get_block(self, block_hash):
@@ -19,7 +20,7 @@ class BlockchainReader:
                 header = {
                     'prev_hash': int(row['prev_hash']), 
                     'nonce': int(row['nonce']),
-                    'timestamp': datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S'),
+                    'timestamp': datetime.strptime(row['timestamp'], FULL_DATE_FORMAT),
                     'entries_amount': int(row['entries_amount']),
                     'difficulty': int(row['difficulty'])
                 }
@@ -31,7 +32,8 @@ class BlockchainReader:
         blocks = []
         second_endpoint = first_endpoint + timedelta(minutes=1)
 
-        day = first_endpoint.strftime("%m-%d-%Y")
+        day = first_endpoint.strftime(DATE_FORMAT)
+
         file_name = str(day) + '.csv'
 
         if not os.path.exists(file_name): 
@@ -39,7 +41,7 @@ class BlockchainReader:
         with open(file_name, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                timestamp = datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
+                timestamp = datetime.strptime(row['timestamp'], FULL_DATE_FORMAT)
                 if timestamp >= first_endpoint and timestamp <= second_endpoint:
                     block_hash = int(row['hash'])
                     blocks.append(self.get_block(block_hash))

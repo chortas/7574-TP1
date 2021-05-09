@@ -13,13 +13,13 @@ class TestBlockchainWriter:
 
     def teardown_method(self, method):
         hash_file_name = str(self.block.hash()) + '.csv'
-        day_file_name = '05-17-2020.csv'
+        day_file_name = '2020-05-17.csv'
         os.remove(hash_file_name)
         os.remove(day_file_name)
         
     def test_file_name_is_hash_and_day(self):
         hash_file_name = str(self.block.hash()) + '.csv'
-        day_file_name = '05-17-2020.csv'
+        day_file_name = '2020-05-17.csv'
 
         blockchain_writer = BlockchainWriter()
         blockchain_writer.write_block(self.block)
@@ -40,7 +40,7 @@ class TestBlockchainWriter:
         blockchain_writer.write_block(self.block)
         
         hash_file_name = str(self.block.hash()) + '.csv'
-        day_file_name = '05-17-2020.csv'
+        day_file_name = '2020-05-17.csv'
 
         with open(hash_file_name, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
@@ -75,7 +75,7 @@ class TestBlockchainWriter:
         assert os.path.exists(other_block_hash_file_name)
         os.remove(other_block_hash_file_name)
 
-        day_file_name = '05-17-2020.csv'
+        day_file_name = '2020-05-17.csv'
         with open(day_file_name, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             line_count = 0
@@ -104,7 +104,7 @@ class TestBlockchainWriter:
         assert os.path.exists(other_block_hash_file_name)
         os.remove(other_block_hash_file_name)
         
-        other_day_file_name = '05-18-2020.csv'
+        other_day_file_name = '2020-05-18.csv'
         assert os.path.exists(other_day_file_name)
 
         with open(other_day_file_name, mode='r') as csv_file:
