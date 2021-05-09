@@ -19,7 +19,7 @@ class BlockManager:
         print(f"Voy a mandar el bloque {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
-            block_queue.join()
+            block_queue.join()\
 
     def start_threads(self):
         for i in range(self.n_miners):
@@ -27,7 +27,7 @@ class BlockManager:
             self.receiver_results[i].start()
 
     def receive_results(self, id_miner):
-        for i in range(2):
+        while True:
             # listen result from result_queues
             could_mine = self.result_queues[id_miner].get()
             if could_mine:

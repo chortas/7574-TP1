@@ -31,7 +31,7 @@ class Miner(Thread):
         return block.hash()
 
     def run(self):
-        for i in range(2):
+       while True:
             block = self.block_queue.get()
             block_hash = self.mine(block)
             print("TASK DONE")

@@ -16,7 +16,8 @@ def parse_config_params():
     return config_params
 
 def main():
-    initialize_log()
+    #initialize_log()
+    print("Primer linea del main")
 
     config_params = parse_config_params()
     block_manager = BlockManager(config_params["n_miners"])
@@ -25,7 +26,7 @@ def main():
     other_block = Block([])
     block_manager.send_block(other_block)
 
-    block_manager.join()
+    #block_manager.join()
 
 def initialize_log():
     """
