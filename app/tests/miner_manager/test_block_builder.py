@@ -1,5 +1,6 @@
 import pytest
 from common.block import Block
+from time import sleep
 from miner_manager.block_builder import BlockBuilder
 
 class TestCryptographicSolver:
@@ -42,3 +43,13 @@ class TestCryptographicSolver:
         assert other_block != None
         other_entries.append(str(257+255))
         assert other_block.get_entries() == other_entries
+
+    def test_create_block_if_more_than_timeout(self):
+        for i in range(5):
+            block = self.block_builder.add_chunk(str(i))
+            assert block == None
+        sleep(15)
+        block = self.block_builder.add_chunk('5')
+        assert block != None
+        assert block.get_entries() == ['0', '1', '2', '3', '4', '5']
+        
