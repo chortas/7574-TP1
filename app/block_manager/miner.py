@@ -5,12 +5,13 @@ import socket
 import json
 from sockets.utils import *
 from common.utils import *
+from stats.stats_writer import StatsWriter
 
 # It should have a thread mining and a thread listening whether it needs to stop mining the block
 
 class Miner(Thread):
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
-    blockchain_host, blockchain_port, prev_hash_queue):
+    blockchain_host, blockchain_port, prev_hash_queue, stats_writer):
         Thread.__init__(self)
         self.cryptographic_solver = CryptographicSolver()
         self.block_queue = block_queue
@@ -20,6 +21,7 @@ class Miner(Thread):
         self.blockchain_host = blockchain_host
         self.blockchain_port = blockchain_port
         self.prev_hash_queue = prev_hash_queue
+        self.stats_writer = stats_writer
 
     def mine(self, block):
         block.set_timestamp(get_and_format_datetime_now())
@@ -31,6 +33,7 @@ class Miner(Thread):
             print(f"Me pidieron que frene y soy el minero {self.id}")
             self.stop_queue.get()
             self.result_queue.put(False)
+            self.stats_writer.add_stat(self.id, False)
             return False
         
         return True
@@ -57,9 +60,11 @@ class Miner(Thread):
                     self.result_queue.put(True)
                     hash_obtained = result["hash"]
                     self.prev_hash_queue.put(hash_obtained)
+                    self.stats_writer.add_stat(self.id, True)
                 else:
                     print(f"Soy el minero {self.id} y no pude minar!")
                     self.result_queue.put(False)
+                    self.stats_writer.add_stat(self.id, False)
 
                 # send to stat
                 close(miner_socket)

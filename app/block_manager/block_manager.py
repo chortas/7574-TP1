@@ -1,6 +1,7 @@
 from queue import Queue
 from miner import Miner
 from threading import Thread
+from stats.stats_writer import StatsWriter
 
 import time
 
@@ -12,7 +13,8 @@ class BlockManager:
         self.result_queues = [Queue() for _ in range(n_miners)]
         self.prev_hash_queues = [Queue() for _ in range(n_miners)]
         self.miners = [Miner(self.block_queues[i], self.stop_queues[i], 
-        self.result_queues[i], i, blockchain_host, blockchain_port, self.prev_hash_queues[i]) for i in range(n_miners)]
+        self.result_queues[i], i, blockchain_host, blockchain_port, self.prev_hash_queues[i],
+        StatsWriter(self.n_miners)) for i in range(n_miners)]
         self.receiver_results = [Thread(target=self.receive_results, args=(i,)) for i in range(n_miners)]
         self.prev_hash = 0
 
