@@ -6,6 +6,7 @@ from stats.stats_writer import StatsWriter
 
 import time
 import logging
+from random import shuffle
 
 class BlockManager:
     def __init__(self, n_miners, blockchain_host, blockchain_port):
@@ -26,7 +27,9 @@ class BlockManager:
     def send_block(self, block):
         block.set_prev_hash(self.prev_hash)
         block.set_difficulty(self.difficulty_adjuster.get_difficulty())
-        for block_queue in self.block_queues:
+        queues_to_send = self.block_queues[:]
+        shuffle(queues_to_send)
+        for block_queue in queues_to_send:
             block_queue.put(block)
             block_queue.join()
 
