@@ -18,7 +18,6 @@ def parse_config_params():
 
 def main():
     initialize_log()
-    print("Hola")
 
     config_params = parse_config_params()
 

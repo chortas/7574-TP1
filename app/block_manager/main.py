@@ -31,9 +31,11 @@ def main():
     block = Block([])
     block_manager.send_block(block)
 
-    other_block = Block([])
-    
-    block_manager.send_block(other_block)
+    block_2 = Block([])
+    block_manager.send_block(block_2)
+
+    block_3 = Block([])
+    block_manager.send_block(block_3)
 
     #block_manager.join()
 

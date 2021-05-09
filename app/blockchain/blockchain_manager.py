@@ -26,6 +26,10 @@ class BlockchainManager:
         print(f'[BLOCKCHAIN_MANAGER] Connected with {second_miner_socket}')
         self.__handle_miner_connection(second_miner_socket)
 
+        third_miner_socket = accept_new_connection(self.socket)
+        print(f'[BLOCKCHAIN_MANAGER] Connected with {third_miner_socket}')
+        self.__handle_miner_connection(third_miner_socket)
+
     def __handle_miner_connection(self, miner_socket):
         """
         Read message from a specific miner socket and closes the socket
