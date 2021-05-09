@@ -28,16 +28,9 @@ def main():
 
     block_manager = BlockManager(n_miners, blockchain_host, blockchain_port)
     
-    block = Block([])
-    block_manager.send_block(block)
-
-    block_2 = Block([])
-    block_manager.send_block(block_2)
-
-    block_3 = Block([])
-    block_manager.send_block(block_3)
-
-    #block_manager.join()
+    for i in range(1000):
+        block = Block([])
+        block_manager.send_block(block)
 
 def initialize_log():
     """

@@ -6,7 +6,7 @@ import json
 MAX_ENTRIES_AMOUNT = 256
 
 class Block: 
-    def __init__(self, entries, header={}):
+    def __init__(self, entries, header={}, hash_received=0):
         if header != {}:
             self.header = header
         else:
@@ -21,10 +21,14 @@ class Block:
             raise ValueError("Exceeding chunk size")
         
         self.entries = entries
+        self.hash_given = hash_received
             
     def hash(self):
         return int(sha256(repr(self.header).encode('utf-8') + repr(self.entries).encode('utf-8')).hexdigest(), 16)
-        
+
+    def get_hash(self):
+        return self.hash_given
+
     def set_prev_hash(self, prev_hash):
         self.header['prev_hash'] = prev_hash
 
@@ -36,6 +40,9 @@ class Block:
 
     def get_difficulty(self):
         return self.header['difficulty']
+    
+    def set_difficulty(self, difficulty):
+        self.header['difficulty'] = difficulty
 
     def get_prev_hash(self):
         return self.header['prev_hash']
@@ -83,7 +90,7 @@ class Block:
                     'difficulty': int(json_data['difficulty'])
                 }
         entries = json_data['entries'].split('-')
-        return cls(entries, header=header)
+        return cls(entries, header=header, hash_received=int(json_data['hash']))
 
     def __str__(self):
         entries = ",".join(self.entries)

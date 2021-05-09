@@ -1,6 +1,7 @@
 from queue import Queue
 from miner import Miner
 from threading import Thread
+from difficulty_adjuster import DifficultyAdjuster
 from stats.stats_writer import StatsWriter
 
 import time
@@ -18,11 +19,14 @@ class BlockManager:
         StatsWriter(self.n_miners)) for i in range(n_miners)]
         self.receiver_results = [Thread(target=self.receive_results, args=(i,)) for i in range(n_miners)]
         self.prev_hash = 0
+        self.difficulty_adjuster = DifficultyAdjuster()
 
         self.start_threads()
 
     def send_block(self, block):
         block.set_prev_hash(self.prev_hash)
+        block.set_difficulty(self.difficulty_adjuster.get_difficulty())
+        logging.info(f"La dificultad del bloque que estoy por mandar es: {block.get_difficulty()}")
         logging.info(f"I'm about to send the block: {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
@@ -41,6 +45,7 @@ class BlockManager:
                 logging.info(f"El minero {id_miner} pudo minar")
                 self.stop_miners_except(id_miner)
                 self.prev_hash = self.prev_hash_queues[id_miner].get()
+                self.difficulty_adjuster.add_block_to_count()
             else:
                 logging.info(f"El minero {id_miner} no pudo minar")
     

@@ -52,7 +52,12 @@ class BlockchainManager:
         return False
     
     def is_block_valid(self, block):
-        return block.get_prev_hash() == self.last_block_hash and self.cryptographic_solver.solve(block)
+        if block.get_prev_hash() != self.last_block_hash:
+            logging.info("El hash es distinto")
+        if not self.cryptographic_solver.solve(block, block.get_hash()):
+            logging.info("En realidad no resolviste...")
+        logging.info(f"La dificultad del bloque es: {block.get_difficulty()}")
+        return block.get_prev_hash() == self.last_block_hash and self.cryptographic_solver.solve(block, block.get_hash())
     
     def get_last_hash(self):
         return self.last_block_hash
