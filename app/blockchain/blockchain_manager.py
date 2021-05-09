@@ -6,14 +6,14 @@ from blockchain_writer import BlockchainWriter
 from sockets.utils import *
 
 class BlockchainManager:
-    def __init__(self, socket_host, socket_port):
+    def __init__(self, socket_host, socket_port, listen_backlog):
         self.blocks = []
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
         self.blockchain_writer = BlockchainWriter()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((socket_host, socket_port))
-        self.socket.listen(1)
+        self.socket.listen(listen_backlog)
 
     def receive_blocks(self):
         while True:
@@ -32,7 +32,7 @@ class BlockchainManager:
             logging.info(f'Block serialized: {block_serialized}')
             block = Block.deserialize(block_serialized)
             result = {}
-            if self.add_block(block):
+            if self.__add_block(block):
                 result = json.dumps({"hash": block.hash(), "result": "OK"})
             else:
                 result = json.dumps({"result": "FAILED"})
@@ -43,17 +43,15 @@ class BlockchainManager:
         finally:
             miner_socket.close()
 
-    def add_block(self, new_block):
-        if (self.is_block_valid(new_block)):
+    def __add_block(self, new_block):
+        if (self.__is_block_valid(new_block)):
             self.blocks.append(new_block)
             self.last_block_hash = new_block.hash()
             self.blockchain_writer.write_block(new_block) #TODO: see if this could be in a different thread
             return True
         return False
     
-    def is_block_valid(self, block):
+    def __is_block_valid(self, block):
         return block.get_prev_hash() == self.last_block_hash and self.cryptographic_solver.solve(block, block.get_hash())
-    
-    def get_last_hash(self):
-        return self.last_block_hash
+
     

@@ -23,13 +23,13 @@ def main():
 
     blockchain_host = config_params["blockchain_host"]
     blockchain_port = config_params["blockchain_port"]
-    blockchain_listeners = config_params["blockchain_listeners"] #TODO: see if this will be used
+    blockchain_listeners = config_params["blockchain_listeners"]
 
     logging.info(f"Blockchain host: {blockchain_host}")
     logging.info(f"Blockchain port: {blockchain_port}")
     logging.info(f"Blockchain listeners: {blockchain_listeners}")
 
-    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port)
+    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners)
 
     blockchain_manager.receive_blocks()
 

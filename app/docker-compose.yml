@@ -19,8 +19,12 @@ services:
       - N_MINERS=5
       - BLOCKCHAIN_HOST=blockchain
       - BLOCKCHAIN_PORT=12345
+      - API_PORT=8080
+      - API_LISTENERS=1
     networks:
       - blockchain_network
+    ports:
+      - "8080:8080"
     depends_on: 
       - blockchain
 

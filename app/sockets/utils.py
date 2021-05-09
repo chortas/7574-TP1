@@ -42,8 +42,14 @@ def bytes_4_to_number(b):
 
 def send_data(data, socket):
     socket.send(number_to_4_bytes(len(data)))
+    send_fixed_data(data, socket)
+
+def send_fixed_data(data, socket):
     socket.send(data.encode())
+
+def recv_fixed_data(socket, data_len):
+    return socket.recv(data_len).rstrip().decode()    
 
 def recv_data(socket):
     data_len = bytes_4_to_number(socket.recv(NUM_PARAM_BYTES))
-    return socket.recv(data_len).decode()
+    return recv_fixed_data(socket, data_len)
