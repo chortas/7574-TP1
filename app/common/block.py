@@ -88,10 +88,10 @@ class Block:
     def __str__(self):
         entries = ",".join(self.entries)
         return f"""
-        'block_hash': {hex(self.hash())}
+        'block_hash': {self.hash()}
         
         'header': {{
-            'prev_hash':{hex(self.header['prev_hash'])}
+            'prev_hash':{self.header['prev_hash']}
             'nonce': {self.header['nonce']}
             'timestamp': {self.header['timestamp']}
             'entries_amount': {self.header['entries_amount']}

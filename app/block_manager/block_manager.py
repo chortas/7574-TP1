@@ -10,13 +10,16 @@ class BlockManager:
         self.block_queues = [Queue() for _ in range(n_miners)]
         self.stop_queues = [Queue() for _ in range(n_miners)]
         self.result_queues = [Queue() for _ in range(n_miners)]
-        self.miners = [Miner(self.block_queues[i], self.stop_queues[i], self.result_queues[i], i, blockchain_host, blockchain_port) for i in range(n_miners)]
+        self.prev_hash_queues = [Queue() for _ in range(n_miners)]
+        self.miners = [Miner(self.block_queues[i], self.stop_queues[i], 
+        self.result_queues[i], i, blockchain_host, blockchain_port, self.prev_hash_queues[i]) for i in range(n_miners)]
         self.receiver_results = [Thread(target=self.receive_results, args=(i,)) for i in range(n_miners)]
+        self.prev_hash = 0
 
         self.start_threads()
 
     def send_block(self, block):
-        # Block should have prev_hash
+        block.set_prev_hash(self.prev_hash)
         print(f"Voy a mandar el bloque {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
@@ -34,6 +37,7 @@ class BlockManager:
             if could_mine:
                 print(f"El minero {id_miner} pudo minar")
                 self.stop_miners_except(id_miner)
+                self.prev_hash = self.prev_hash_queues[id_miner].get()
             else:
                 print(f"El minero {id_miner} no pudo minar")
     

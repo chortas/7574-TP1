@@ -38,3 +38,12 @@ def bytes_4_to_number(b):
     for i in range(4):
         res += b[i] << (i*8)
     return res
+
+def send_data(data, socket):
+    socket.send(number_to_4_bytes(len(data)))
+    socket.send(data.encode())
+
+def recv_data(socket):
+    data_len = bytes_4_to_number(socket.recv(NUM_PARAM_BYTES))
+    print(f'Data len: {data_len}')
+    return socket.recv(data_len).decode()
