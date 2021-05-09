@@ -1,9 +1,27 @@
 version: '3'
 services:
+  blockchain:
+    container_name: blockchain
+    image: blockchain:latest
+    entrypoint: python3 /main.py
+    environment:
+      - BLOCKCHAIN_IP=0.0.0.0
+      - BLOCKCHAIN_PORT=8080
+    networks:
+      - blockchain_network
+
   block_manager:
     container_name: block_manager
     image: block_manager:latest
     entrypoint: python3 /main.py
     environment:
         - N_MINERS=5
-  
+    depends_on: 
+        - blockchain
+
+networks:
+  blockchain_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24

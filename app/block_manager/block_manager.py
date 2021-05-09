@@ -19,7 +19,7 @@ class BlockManager:
         print(f"Voy a mandar el bloque {block}")
         for block_queue in self.block_queues:
             block_queue.put(block)
-            block_queue.join()\
+            block_queue.join()
 
     def start_threads(self):
         for i in range(self.n_miners):

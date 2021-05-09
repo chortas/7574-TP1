@@ -17,6 +17,7 @@ build: deps
 
 docker-image:
 	docker build -f ./block_manager/Dockerfile -t "block_manager:latest" .
+	docker build -f ./blockchain/Dockerfile -t "blockchain:latest" .
 .PHONY: docker-image
 
 docker-compose-up: docker-image
