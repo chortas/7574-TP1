@@ -15,9 +15,13 @@ build: deps
 	GOOS=linux go build -o bin/client github.com/7574-sistemas-distribuidos/docker-compose-init/client
 .PHONY: build
 
-docker-image:
-	docker build -f ./block_manager/Dockerfile -t "block_manager:latest" .
+blockchain:
 	docker build -f ./blockchain/Dockerfile -t "blockchain:latest" .
+.PHONY: blockchain
+
+docker-image:
+	docker build -f ./blockchain/Dockerfile -t "blockchain:latest" .
+	docker build -f ./block_manager/Dockerfile -t "block_manager:latest" .
 .PHONY: docker-image
 
 docker-compose-up: docker-image

@@ -5,8 +5,9 @@ services:
     image: blockchain:latest
     entrypoint: python3 /main.py
     environment:
-      - BLOCKCHAIN_IP=0.0.0.0
-      - BLOCKCHAIN_PORT=8080
+      - BLOCKCHAIN_HOST=0.0.0.0
+      - BLOCKCHAIN_PORT=12345
+      - BLOCKCHAIN_LISTENERS=1
     networks:
       - blockchain_network
 
@@ -15,9 +16,13 @@ services:
     image: block_manager:latest
     entrypoint: python3 /main.py
     environment:
-        - N_MINERS=5
+      - N_MINERS=5
+      - BLOCKCHAIN_HOST=blockchain
+      - BLOCKCHAIN_PORT=12345
+    networks:
+      - blockchain_network
     depends_on: 
-        - blockchain
+      - blockchain
 
 networks:
   blockchain_network:

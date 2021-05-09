@@ -1,15 +1,16 @@
 from queue import Queue
 from miner import Miner
 from threading import Thread
+
 import time
 
 class BlockManager:
-    def __init__(self, n_miners):
+    def __init__(self, n_miners, blockchain_host, blockchain_port):
         self.n_miners = n_miners
         self.block_queues = [Queue() for _ in range(n_miners)]
         self.stop_queues = [Queue() for _ in range(n_miners)]
         self.result_queues = [Queue() for _ in range(n_miners)]
-        self.miners = [Miner(self.block_queues[i], self.stop_queues[i], self.result_queues[i], i) for i in range(n_miners)]
+        self.miners = [Miner(self.block_queues[i], self.stop_queues[i], self.result_queues[i], i, blockchain_host, blockchain_port) for i in range(n_miners)]
         self.receiver_results = [Thread(target=self.receive_results, args=(i,)) for i in range(n_miners)]
 
         self.start_threads()
