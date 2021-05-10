@@ -1,6 +1,7 @@
 import socket
 import logging
 import json
+from threading import Thread
 from sockets.utils import *
 from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
@@ -12,7 +13,7 @@ BLOCK_LEN = 16777216
 
 class ApiHandler:
     def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port, 
-    timeout_chunk, limit_chunk):
+    timeout_chunk, limit_chunk, n_clients):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind(('', socket_port))
         self.socket.listen(listen_backlog)
@@ -21,7 +22,6 @@ class ApiHandler:
 
         self.limit_chunk = limit_chunk
         self.chunk_queue = Queue()
-        logging.info(f"[API_HANDLER] El maximo tamaño de la cola es {self.chunk_queue.qsize()}")
         self.block_queue = miner_manager.get_block_queue()
         self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue, timeout_chunk)
 
@@ -32,12 +32,14 @@ class ApiHandler:
         self.query_host = query_host
         self.query_port = query_port
 
-        self.start_readers()
+        self.runners = [Thread(target=self.run) for i in range(n_clients)]
 
     def start_readers(self):
         self.stats_reader.start()
         self.block_builder.start()
         self.miner_manager.start()
+        for runner in self.runners:
+            runner.start()
 
     def run(self):
         while True:

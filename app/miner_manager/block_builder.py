@@ -21,8 +21,6 @@ class BlockBuilder(Thread):
         while True:
             chunk = None
             try:
-                logging.info("[BLOCK_BUILDER] Estoy por dormir")
-                logging.info("[BLOCK_BUILDER] Termine de dormir")
                 chunk = self.chunk_queue.get(timeout=self.timeout_chunk) 
                 self.chunks.append(chunk)
                 if len(self.chunks) == MAXIMUM_CHUNKS_BY_BLOCK:

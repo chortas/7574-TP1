@@ -29,6 +29,7 @@ services:
       - QUERY_PORT=12344
       - TIMEOUT_CHUNK=15
       - LIMIT_CHUNK=1
+      - N_CLIENTS=5
     networks:
       - blockchain_network
     ports:
