@@ -11,11 +11,16 @@ def parse_config_params():
     config_params = {}
     try:
         config_params["n_miners"] = int(os.environ["N_MINERS"])
+
         config_params["blockchain_host"] = os.environ["BLOCKCHAIN_HOST"]
         config_params["blockchain_port"] = int(os.environ["BLOCKCHAIN_PORT"])
 
         config_params["api_port"] = int(os.environ["API_PORT"])
         config_params["api_listeners"] = int(os.environ["API_LISTENERS"])
+
+        config_params["query_host"] = os.environ["QUERY_HOST"]
+        config_params["query_port"] = int(os.environ["QUERY_PORT"])
+
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting block manager".format(e))
     except ValueError as e:
@@ -35,11 +40,12 @@ def main():
     api_port = config_params["api_port"]
     api_listeners = config_params["api_listeners"]
 
-    logging.info(f"Api port: {api_port}")
-    logging.info(f"Api listeners: {api_listeners}")
+    query_host = config_params["query_host"]
+    query_port = config_params["query_port"]
 
     miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port, Queue())
-    api_handler = ApiHandler(api_port, api_listeners, miner_manager)
+    api_handler = ApiHandler(api_port, api_listeners, miner_manager, query_host, query_port)
+    
     api_handler.run()
 
 def initialize_log():

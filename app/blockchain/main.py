@@ -2,6 +2,7 @@
 import logging
 import os
 from blockchain_manager import BlockchainManager
+from query_manager import QueryManager
 
 def parse_config_params():
     config_params = {}
@@ -9,6 +10,13 @@ def parse_config_params():
         config_params["blockchain_host"] = os.environ["BLOCKCHAIN_HOST"]
         config_params["blockchain_port"] = int(os.environ["BLOCKCHAIN_PORT"])
         config_params["blockchain_listeners"] = int(os.environ["BLOCKCHAIN_LISTENERS"])
+
+        config_params["query_host"] = os.environ["QUERY_HOST"]
+        config_params["query_port"] = int(os.environ["QUERY_PORT"])
+        config_params["query_listeners"] = int(os.environ["QUERY_LISTENERS"])
+
+        config_params["n_readers"] = int(os.environ["N_READERS"])
+
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting blockchain".format(e))
     except ValueError as e:
@@ -29,9 +37,21 @@ def main():
     logging.info(f"Blockchain port: {blockchain_port}")
     logging.info(f"Blockchain listeners: {blockchain_listeners}")
 
-    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners)
+    query_host = config_params["query_host"]
+    query_port = config_params["query_port"]
+    query_listeners = config_params["query_listeners"]
 
-    blockchain_manager.receive_blocks()
+    logging.info(f"Query host: {query_host}")
+    logging.info(f"Query port: {query_port}")
+    logging.info(f"Query listeners: {query_listeners}")
+
+    n_readers = config_params["n_readers"]
+
+    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners)
+    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers)
+
+    blockchain_manager.start()
+    query_manager.receive_queries()
 
 def initialize_log():
     """

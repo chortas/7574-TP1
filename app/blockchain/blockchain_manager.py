@@ -3,10 +3,12 @@ import json
 from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
 from blockchain_writer import BlockchainWriter
+from threading import Thread
 from sockets.utils import *
 
-class BlockchainManager:
+class BlockchainManager(Thread):
     def __init__(self, socket_host, socket_port, listen_backlog):
+        Thread.__init__(self)
         self.blocks = []
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
@@ -15,7 +17,7 @@ class BlockchainManager:
         self.socket.bind((socket_host, socket_port))
         self.socket.listen(listen_backlog)
 
-    def receive_blocks(self):
+    def run(self):
         while True:
             miner_socket = accept_new_connection(self.socket)
             logging.info(f'[BLOCKCHAIN_MANAGER] Connected with {miner_socket}')

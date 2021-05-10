@@ -8,6 +8,10 @@ services:
       - BLOCKCHAIN_HOST=0.0.0.0
       - BLOCKCHAIN_PORT=12345
       - BLOCKCHAIN_LISTENERS=1
+      - QUERY_HOST=0.0.0.0
+      - QUERY_PORT=12344
+      - QUERY_LISTENERS=1
+      - N_READERS=1
     networks:
       - blockchain_network
 
@@ -21,6 +25,8 @@ services:
       - BLOCKCHAIN_PORT=12345
       - API_PORT=8080
       - API_LISTENERS=5
+      - QUERY_HOST=blockchain
+      - QUERY_PORT=12344
     networks:
       - blockchain_network
     ports:

@@ -7,9 +7,10 @@ from queue import Queue
 
 MAX_CHUNK_SIZE = 65536
 MAX_SIZE = 1024
+BLOCK_LEN = 9999 #TODO: change this
 
 class ApiHandler:
-    def __init__(self, socket_port, listen_backlog, miner_manager):
+    def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind(('', socket_port))
         self.socket.listen(listen_backlog)
@@ -23,6 +24,9 @@ class ApiHandler:
         self.stats_reader_queue = Queue()
         self.stats_reader_result_queue = Queue()
         self.stats_reader = StatsReader(self.stats_reader_queue, self.stats_reader_result_queue)
+
+        self.query_host = query_host
+        self.query_port = query_port
 
         self.start_readers()
 
@@ -57,9 +61,18 @@ class ApiHandler:
 
             elif op == "GET BLOCK":
                 hash_received = recv_fixed_data(client_sock, MAX_SIZE)
-                logging.info(f"Received hash: {hash_received}")
-                # TODO: do this
-                response = json.dumps({"status_code": 200, "block": {}})
+
+                query_socket = create_and_connect(self.query_host, self.query_port)
+
+                send_fixed_data(op, query_socket)
+                recv_fixed_data(query_socket, MAX_SIZE)
+                send_fixed_data(hash_received, query_socket)
+
+                block = recv_fixed_data(query_socket, BLOCK_LEN)
+
+                close(query_socket)
+                
+                response = json.dumps({"status_code": 200, "block": block})
             
             elif op == "GET BLOCKS BY MINUTE":
                 # TODO: do this

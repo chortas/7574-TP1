@@ -12,6 +12,9 @@ class BlockBuilder(Thread):
         self.chunk_queue = chunk_queue
         self.block_queue = block_queue
         self.chunks = []
+
+    def stop(self):
+        self._stop.set()
     
     def run(self):
         while True:
@@ -31,3 +34,4 @@ class BlockBuilder(Thread):
         block = Block(self.chunks)
         self.chunks = []
         self.block_queue.put(block)
+
