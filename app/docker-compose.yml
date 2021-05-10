@@ -28,7 +28,7 @@ services:
       - QUERY_HOST=blockchain
       - QUERY_PORT=12344
       - TIMEOUT_CHUNK=15
-      - LIMIT_CHUNK=1
+      - LIMIT_CHUNK=200
       - N_CLIENTS=5
     networks:
       - blockchain_network

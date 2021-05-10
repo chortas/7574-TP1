@@ -9,7 +9,7 @@ class TestBlockBuilder:
     def setup_method(self):
         self.chunk_queue = Queue()
         self.block_queue = Queue()
-        self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue)
+        self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue, 5)
         self.stop_flag = False
         self.block_builder.start()
 
