@@ -2,9 +2,11 @@ import socket
 import json
 from sockets.utils import *
 from block_builder import BlockBuilder
+from stats.stats_reader import StatsReader
+from queue import Queue
 
 MAX_CHUNK_SIZE = 65536
-MAX_OP = 1024
+MAX_SIZE = 1024
 
 class ApiHandler:
     def __init__(self, socket_port, listen_backlog, miner_manager):
@@ -13,6 +15,15 @@ class ApiHandler:
         self.socket.listen(listen_backlog)
         self.block_builder = BlockBuilder()
         self.miner_manager = miner_manager
+
+        self.stats_reader_queue = Queue()
+        self.stats_reader_result_queue = Queue()
+        self.stats_reader = StatsReader(self.stats_reader_queue, self.stats_reader_result_queue)
+
+        self.start_readers()
+        
+    def start_readers(self):
+        self.stats_reader.start()
 
     def run(self):
         while True:
@@ -29,18 +40,21 @@ class ApiHandler:
         client socket will also be closed
         """
         try:
-            op = recv_fixed_data(client_sock, MAX_OP)
+            op = recv_fixed_data(client_sock, MAX_SIZE)
             logging.info(f"Operation received: {op}")
             response = None
 
             if op == "ADD CHUNK":
                 chunk = recv_fixed_data(client_sock, MAX_CHUNK_SIZE)
+                # TODO: fix timeout and use queues in this
                 block = self.block_builder.add_chunk(chunk)
                 if block != None: # to keep receiving chunks
                     self.miner_manager.send_block(block)
                 response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
 
             elif op == "GET BLOCK":
+                hash_received = recv_fixed_data(client_sock, MAX_SIZE)
+                logging.info(f"Received hash: {hash_received}")
                 # TODO: do this
                 response = json.dumps({"status_code": 200, "block": {}})
             
@@ -49,8 +63,10 @@ class ApiHandler:
                 response = json.dumps({"status_code": 200, "blocks": []})
 
             elif op == "GET STATS":
-                response = json.dumps({"status_code": 200, "result": {}})
-            
+                self.stats_reader_queue.put(True)
+                stats = self.stats_reader_result_queue.get()
+                response = json.dumps({"status_code": 200, "result": stats})
+
             else:
                 response = json.dumps({"status_code": 404, "message": "Not Found"})
 
