@@ -1,7 +1,6 @@
 from common.block import Block
 from queue import Empty
 from threading import Thread
-from time import sleep
 import logging
 
 MAXIMUM_CHUNKS_BY_BLOCK = 256
@@ -23,7 +22,6 @@ class BlockBuilder(Thread):
             chunk = None
             try:
                 logging.info("[BLOCK_BUILDER] Estoy por dormir")
-                sleep(20)
                 logging.info("[BLOCK_BUILDER] Termine de dormir")
                 chunk = self.chunk_queue.get(timeout=self.timeout_chunk) 
                 self.chunks.append(chunk)
