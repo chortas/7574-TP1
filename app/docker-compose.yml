@@ -27,6 +27,8 @@ services:
       - API_LISTENERS=5
       - QUERY_HOST=blockchain
       - QUERY_PORT=12344
+      - TIMEOUT_CHUNK=15
+      - LIMIT_CHUNK=1
     networks:
       - blockchain_network
     ports:

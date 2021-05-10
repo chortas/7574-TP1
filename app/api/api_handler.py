@@ -1,4 +1,5 @@
 import socket
+import logging
 import json
 from sockets.utils import *
 from block_builder import BlockBuilder
@@ -10,16 +11,19 @@ MAX_SIZE = 1024
 BLOCK_LEN = 16777216
 
 class ApiHandler:
-    def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port):
+    def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port, 
+    timeout_chunk, limit_chunk):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind(('', socket_port))
         self.socket.listen(listen_backlog)
 
         self.miner_manager = miner_manager
 
+        self.limit_chunk = limit_chunk
         self.chunk_queue = Queue()
+        logging.info(f"[API_HANDLER] El maximo tamaño de la cola es {self.chunk_queue.qsize()}")
         self.block_queue = miner_manager.get_block_queue()
-        self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue)
+        self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue, timeout_chunk)
 
         self.stats_reader_queue = Queue()
         self.stats_reader_result_queue = Queue()
@@ -56,8 +60,11 @@ class ApiHandler:
 
             if op == "ADD CHUNK":
                 chunk = recv_fixed_data(client_sock, MAX_CHUNK_SIZE)
-                self.chunk_queue.put(chunk)
-                response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
+                if self.chunk_queue.qsize() == self.limit_chunk:
+                    response = json.dumps({"status_code": 503, "message": "The system is overloaded at the moment. Try again later"})
+                else:
+                    self.chunk_queue.put(chunk)
+                    response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
 
             elif op == "GET BLOCK":
                 hash_received = recv_fixed_data(client_sock, MAX_SIZE)

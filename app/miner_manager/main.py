@@ -21,6 +21,9 @@ def parse_config_params():
         config_params["query_host"] = os.environ["QUERY_HOST"]
         config_params["query_port"] = int(os.environ["QUERY_PORT"])
 
+        config_params["timeout_chunk"] = int(os.environ["TIMEOUT_CHUNK"])
+        config_params["limit_chunk"] = int(os.environ["LIMIT_CHUNK"])
+
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting block manager".format(e))
     except ValueError as e:
@@ -43,8 +46,12 @@ def main():
     query_host = config_params["query_host"]
     query_port = config_params["query_port"]
 
+    timeout_chunk = config_params["timeout_chunk"]
+    limit_chunk = config_params["limit_chunk"]
+
     miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port, Queue())
-    api_handler = ApiHandler(api_port, api_listeners, miner_manager, query_host, query_port)
+    api_handler = ApiHandler(api_port, api_listeners, miner_manager, query_host, query_port, 
+    timeout_chunk, limit_chunk)
     
     api_handler.run()
 
