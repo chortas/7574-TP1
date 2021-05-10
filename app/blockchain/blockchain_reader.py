@@ -62,7 +62,11 @@ class BlockchainReader(Thread):
         return Block(entries, header)
 
     def get_blocks_between_minute_interval(self, first_endpoint):
-        first_endpoint = datetime.strptime(first_endpoint, MINUTE_FORMAT)
+        try:
+            first_endpoint = datetime.strptime(first_endpoint, MINUTE_FORMAT)
+        except ValueError:
+            logging.info("[BLOCKCHAIN_READER] The date is not valid or it should not contain seconds")
+            return []
 
         blocks = []
         second_endpoint = first_endpoint + timedelta(minutes=1)

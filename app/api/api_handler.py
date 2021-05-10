@@ -7,7 +7,7 @@ from queue import Queue
 
 MAX_CHUNK_SIZE = 65536
 MAX_SIZE = 1024
-BLOCK_LEN = 9999 #TODO: change this
+BLOCK_LEN = 16777216
 
 class ApiHandler:
     def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port):
