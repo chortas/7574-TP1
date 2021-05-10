@@ -25,7 +25,8 @@ class BlockchainReader(Thread):
                 client_socket = request["socket"]
                 block = self.get_block(hash_received)
                 logging.info(f"[BLOCKCHAIN_READER] Block: {block}")
-                self.result_queue.put({"socket": client_socket, "result": block.serialize_into_dict()})
+                serialized_block = block.serialize_into_dict() if block != None else {}
+                self.result_queue.put({"socket": client_socket, "result": serialized_block})
             else:
                 first_endpoint = request["timestamp"]
                 logging.info(f"[BLOCKCHAIN_READER] Timestamp received: {first_endpoint}")

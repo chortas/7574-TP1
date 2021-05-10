@@ -11,7 +11,7 @@ services:
       - QUERY_HOST=0.0.0.0
       - QUERY_PORT=12344
       - QUERY_LISTENERS=1
-      - N_READERS=1
+      - N_READERS=5
     networks:
       - blockchain_network
 
