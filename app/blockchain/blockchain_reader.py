@@ -16,18 +16,25 @@ class BlockchainReader(Thread):
         while True:
             request = self.request_queue.get()
             operation = request["operation"]
+
+            logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
+            
             if operation == "GET BLOCK":
-                logging.info(f"[BLOCKCHAIN_READER] Operation received: {request['operation']}")
                 hash_received = request["hash"]
-                logging.info(f"[BLOCKCHAIN_READER] Hash received: {request['hash']}")
+                logging.info(f"[BLOCKCHAIN_READER] Hash received: {hash_received}")
                 client_socket = request["socket"]
                 block = self.get_block(hash_received)
                 logging.info(f"[BLOCKCHAIN_READER] Block: {block}")
                 self.result_queue.put({"socket": client_socket, "result": block.serialize_into_dict()})
             else:
                 first_endpoint = request["timestamp"]
-                blocks = self.get_blocks_between_minute_interval(first_endpoint) 
-
+                logging.info(f"[BLOCKCHAIN_READER] Timestamp received: {first_endpoint}")
+                client_socket = request["socket"]
+                blocks = self.get_blocks_between_minute_interval(first_endpoint)
+                serialized_blocks = [block.serialize_into_dict() for block in blocks]
+                logging.info(f"[BLOCKCHAIN_READER] Blocks: {serialized_blocks}")
+                self.result_queue.put({"socket": client_socket, "result": serialized_blocks})
+      
     def get_block(self, block_hash):
         hash_file_name = str(block_hash) + '.csv'
         logging.info(f"Hash name: {hash_file_name}")
@@ -54,6 +61,8 @@ class BlockchainReader(Thread):
         return Block(entries, header)
 
     def get_blocks_between_minute_interval(self, first_endpoint):
+        first_endpoint = datetime.strptime(first_endpoint, MINUTE_FORMAT)
+
         blocks = []
         second_endpoint = first_endpoint + timedelta(minutes=1)
 

@@ -54,16 +54,9 @@ class QueryManager:
                 self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
             elif op == "GET BLOCKS BY MINUTE":
-                pass
-                '''timestamp_received = recv_fixed_data(client_socket, MAX_SIZE)
+                timestamp_received = recv_fixed_data(client_socket, MAX_SIZE)
                 logging.info(f"[QUERY_MANAGER] Received timestamp: {timestamp_received}")
-                self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
-                '''
-
-            else:
-                result = json.dumps({"result": "FAILED"})
-
-            #send_data(result, miner_socket)
+                self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 
         except OSError:
             logging.info("Error while reading socket {}".format(miner_socket))

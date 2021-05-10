@@ -71,12 +71,23 @@ class ApiHandler:
                 block = recv_fixed_data(query_socket, BLOCK_LEN)
 
                 close(query_socket)
-                
+
                 response = json.dumps({"status_code": 200, "block": block})
             
             elif op == "GET BLOCKS BY MINUTE":
-                # TODO: do this
-                response = json.dumps({"status_code": 200, "blocks": []})
+                timestamp_received = recv_fixed_data(client_sock, MAX_SIZE)
+
+                query_socket = create_and_connect(self.query_host, self.query_port)
+
+                send_fixed_data(op, query_socket)
+                recv_fixed_data(query_socket, MAX_SIZE)
+                send_fixed_data(timestamp_received, query_socket)
+
+                blocks = recv_fixed_data(query_socket, BLOCK_LEN)
+
+                close(query_socket)
+
+                response = json.dumps({"status_code": 200, "blocks": blocks})
 
             elif op == "GET STATS":
                 self.stats_reader_queue.put(True)
