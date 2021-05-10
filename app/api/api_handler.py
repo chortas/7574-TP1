@@ -13,17 +13,23 @@ class ApiHandler:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind(('', socket_port))
         self.socket.listen(listen_backlog)
-        self.block_builder = BlockBuilder()
+
         self.miner_manager = miner_manager
+
+        self.chunk_queue = Queue()
+        self.block_queue = miner_manager.get_block_queue()
+        self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue)
 
         self.stats_reader_queue = Queue()
         self.stats_reader_result_queue = Queue()
         self.stats_reader = StatsReader(self.stats_reader_queue, self.stats_reader_result_queue)
 
         self.start_readers()
-        
+
     def start_readers(self):
         self.stats_reader.start()
+        self.block_builder.start()
+        self.miner_manager.start()
 
     def run(self):
         while True:
@@ -46,10 +52,7 @@ class ApiHandler:
 
             if op == "ADD CHUNK":
                 chunk = recv_fixed_data(client_sock, MAX_CHUNK_SIZE)
-                # TODO: fix timeout and use queues in this
-                block = self.block_builder.add_chunk(chunk)
-                if block != None: # to keep receiving chunks
-                    self.miner_manager.send_block(block)
+                self.chunk_queue.put(chunk)
                 response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
 
             elif op == "GET BLOCK":

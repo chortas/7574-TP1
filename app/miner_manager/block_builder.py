@@ -1,23 +1,33 @@
 from common.block import Block
-from datetime import datetime
+from queue import Empty
+from threading import Thread
 import logging
 
 MAXIMUM_CHUNKS_BY_BLOCK = 256
 MAX_WAIT_TIME = 15
 
-class BlockBuilder:
-    def __init__(self):
+class BlockBuilder(Thread):
+    def __init__(self, chunk_queue, block_queue):
+        Thread.__init__(self)
+        self.chunk_queue = chunk_queue
+        self.block_queue = block_queue
         self.chunks = []
-        self.start_time = datetime.now()
     
-    def add_chunk(self, chunk):
-        self.chunks.append(chunk)
-        elapsed_time = (datetime.now() - self.start_time).total_seconds()
-        if len(self.chunks) == MAXIMUM_CHUNKS_BY_BLOCK or elapsed_time >= MAX_WAIT_TIME:
-            if elapsed_time >= MAX_WAIT_TIME:
-                logging.info(f"Timeout has expired and the block will be sent anyway. Elapsed time: {elapsed_time}s")
-            # the block is built and it should be returned
-            block = Block(self.chunks)
-            self.start_time = datetime.now()
-            self.chunks = []
-            return block
+    def run(self):
+        while True:
+            chunk = None
+            try:
+                chunk = self.chunk_queue.get(timeout=MAX_WAIT_TIME) 
+                self.chunks.append(chunk)
+                if len(self.chunks) == MAXIMUM_CHUNKS_BY_BLOCK:
+                    logging.info("Block is completed and it will be sent")
+                    self.__build_and_send_block()
+            except Empty:
+                if len(self.chunks) != 0:
+                    logging.info("Timeout has expired and the block will be sent anyway")
+                    self.__build_and_send_block()
+
+    def __build_and_send_block(self):
+        block = Block(self.chunks)
+        self.chunks = []
+        self.block_queue.put(block)

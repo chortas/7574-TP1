@@ -8,30 +8,37 @@ import time
 import logging
 from random import shuffle
 
-class MinerManager:
-    def __init__(self, n_miners, blockchain_host, blockchain_port):
+class MinerManager(Thread):
+    def __init__(self, n_miners, blockchain_host, blockchain_port, block_queue):
+        Thread.__init__(self)
         self.n_miners = n_miners
-        self.block_queues = [Queue() for _ in range(n_miners)]
+        self.miner_block_queues = [Queue() for _ in range(n_miners)]
         self.stop_queues = [Queue() for _ in range(n_miners)]
         self.result_queues = [Queue() for _ in range(n_miners)]
         self.prev_hash_queues = [Queue() for _ in range(n_miners)]
-        self.miners = [Miner(self.block_queues[i], self.stop_queues[i], 
+        self.miners = [Miner(self.miner_block_queues[i], self.stop_queues[i], 
         self.result_queues[i], i, blockchain_host, blockchain_port, self.prev_hash_queues[i],
         StatsWriter(self.n_miners)) for i in range(n_miners)]
         self.receiver_results = [Thread(target=self.receive_results, args=(i,)) for i in range(n_miners)]
         self.prev_hash = 0
         self.difficulty_adjuster = DifficultyAdjuster()
+        self.block_queue = block_queue
 
         self.start_threads()
 
-    def send_block(self, block):
-        block.set_prev_hash(self.prev_hash)
-        block.set_difficulty(self.difficulty_adjuster.get_difficulty())
-        queues_to_send = self.block_queues[:]
-        shuffle(queues_to_send)
-        for block_queue in queues_to_send:
-            block_queue.put(block)
-            block_queue.join()
+    def get_block_queue(self):
+        return self.block_queue
+        
+    def run(self):
+        while True:
+            block = self.block_queue.get()
+            block.set_prev_hash(self.prev_hash)
+            block.set_difficulty(self.difficulty_adjuster.get_difficulty())
+            queues_to_send = self.miner_block_queues[:]
+            shuffle(queues_to_send)
+            for block_queue in queues_to_send:
+                block_queue.put(block)
+                block_queue.join()
 
     def start_threads(self):
         for i in range(self.n_miners):

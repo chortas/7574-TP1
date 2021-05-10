@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import os
+from queue import Queue
 from common.block import Block
 from miner_manager import MinerManager
 from block_builder import BlockBuilder
@@ -37,7 +38,7 @@ def main():
     logging.info(f"Api port: {api_port}")
     logging.info(f"Api listeners: {api_listeners}")
 
-    miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port)
+    miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port, Queue())
     api_handler = ApiHandler(api_port, api_listeners, miner_manager)
     api_handler.run()
 
