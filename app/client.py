@@ -9,28 +9,31 @@ API_HOST = "127.0.0.1"
 def main():
     
     # Test 1 -> Guardar 256 chunks consiste en guardar 1 bloque
-    test_add_chunks_until_limit()
+    # test_add_chunks_until_limit()
 
     # Test 2 -> Si hay <256 chunks, después de cierto timeout configurable se manda
-    test_chunk_is_sent_if_timeout()
+    # test_chunk_is_sent_if_timeout()
 
     # Test 3 -> Si se manda más de 256 chunks se envian en bloques distintos
-    test_add_chunks_past_limit()
+    # test_add_chunks_past_limit()
 
     # Test 4 -> Si se pide un bloque con un hash desconocido devuelve vacio
-    test_get_block_by_unknown_hash()
+    # test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_block_by_known_hash("39874154195510368864144105836489997150014927661579415306277194984899534576887")
+    # test_get_block_by_known_hash("94872455518301211611174060337313215717928923152270874949483639728561342568220")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
-    test_get_blocks_by_unknown_timestamp()
+    # test_get_blocks_by_unknown_timestamp()
 
     # Test 7 -> Si se pide un bloque con un timestamp conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_blocks_by_known_timestamp("2021-05-11 00:55")
+    # test_get_blocks_by_known_timestamp("2021-05-11 21:57")
 
     # Test 8 -> Si se piden las stats se dan las correctas
-    test_get_stats()
+    # test_get_stats()
+
+    # Test 9 -> Si se agregan más de 256 bloques se ajusta la dificultad
+    # test_difficulty()
 
 def test_add_chunks_until_limit():
     for i in range(256):
@@ -74,6 +77,11 @@ def test_get_stats():
     client_socket = create_and_connect(API_HOST, API_PORT)
     result = get_stats(client_socket)
     print(result)
+
+def test_difficulty():
+    client_socket = create_and_connect(API_HOST, API_PORT)
+    for i in range(257):
+        test_add_chunks_until_limit()
 
 def get_stats(client_socket):
     operation = "GET STATS"
