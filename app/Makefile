@@ -36,3 +36,11 @@ docker-compose-down:
 docker-compose-logs:
 	docker-compose -f docker-compose.yml logs -f
 .PHONY: docker-compose-logs
+
+test:
+	pytest -s
+.PHONY: test
+
+demo:
+	python3 client.py
+.PHONY: demo
