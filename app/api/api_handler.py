@@ -54,6 +54,9 @@ class ApiHandler:
         try:
             op = recv_fixed_data(client_sock, MAX_SIZE)
             logging.info(f"Operation received: {op}")
+
+            send_fixed_data(json.dumps({"ack": True}), client_sock) #ack
+
             response = None
 
             if op == "ADD CHUNK":
