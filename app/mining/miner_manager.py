@@ -62,8 +62,3 @@ class MinerManager(Thread):
         for i in range(self.n_miners):
             if i != id_miner:
                 self.stop_queues[i].put(True)
-
-    def join(self):
-        for i in range(self.n_miners):
-            self.miners[i].join()
-            self.receiver_results[i].join()
