@@ -3,6 +3,8 @@ from threading import Thread
 import logging
 
 class StatsReader(Thread):
+    """Class that reads stats file to provide stats"""
+    
     def __init__(self, stats_queue, result_queue):
         Thread.__init__(self)
         self.stats_queue = stats_queue

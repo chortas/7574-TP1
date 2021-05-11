@@ -7,6 +7,8 @@ MAXIMUM_CHUNKS_BY_BLOCK = 256
 MAX_WAIT_TIME = 15
 
 class BlockBuilder(Thread):
+    """Class that builds a block given chunks"""
+
     def __init__(self, chunk_queue, block_queue, timeout_chunk):
         Thread.__init__(self)
         self.chunk_queue = chunk_queue
@@ -28,7 +30,7 @@ class BlockBuilder(Thread):
                     self.__build_and_send_block()
             except Empty:
                 if len(self.chunks) != 0:
-                    logging.info("Timeout has expired and the block will be sent anyway")
+                    logging.info("[BLOCK_BUILDER] Timeout has expired and the block will be sent anyway")
                     self.__build_and_send_block()
 
     def __build_and_send_block(self):

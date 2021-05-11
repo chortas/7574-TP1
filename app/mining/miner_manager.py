@@ -9,6 +9,8 @@ import logging
 from random import shuffle
 
 class MinerManager(Thread):
+    """Class that communicates with the miners in order to mine blocks"""
+
     def __init__(self, n_miners, blockchain_host, blockchain_port, block_queue):
         Thread.__init__(self)
         self.n_miners = n_miners
@@ -47,15 +49,14 @@ class MinerManager(Thread):
 
     def receive_results(self, id_miner):
         while True:
-            # listen result from result_queues
             could_mine = self.result_queues[id_miner].get()
             if could_mine:
-                logging.info(f"El minero {id_miner} pudo minar")
+                logging.info(f"[MINER_MANAGER] The miner {id_miner} could mine")
                 self.stop_miners_except(id_miner)
                 self.prev_hash = self.prev_hash_queues[id_miner].get()
                 self.difficulty_adjuster.add_block_to_count()
             else:
-                logging.info(f"El minero {id_miner} no pudo minar")
+                logging.info(f"[MINER_MANAGER] The miner {id_miner} couldn't mine")
     
     def stop_miners_except(self, id_miner):
         for i in range(self.n_miners):

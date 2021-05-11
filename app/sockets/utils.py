@@ -18,7 +18,6 @@ def accept_new_connection(socket):
     Then connection created is printed and returned
     """
 
-    logging.info("Proceed to accept new connections")
     conn, addr = socket.accept()
     logging.info('Got connection from {}'.format(addr))
     return conn

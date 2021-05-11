@@ -8,6 +8,9 @@ from stats.stats_reader import StatsReader
 from queue import Queue
 
 class ApiHandler:
+    """Class that comunicates with the client and forwards the request to the corresponding
+    entities"""
+
     def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port, 
     timeout_chunk, limit_chunk, n_clients):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,16 +48,9 @@ class ApiHandler:
             self.__handle_client_connection(client_sock)
     
     def __handle_client_connection(self, client_sock):
-        """
-        Read message from a specific client socket and closes the socket
-
-        If a problem arises in the communication with the client, the
-        client socket will also be closed
-        """
         try:
             op = recv_fixed_data(client_sock, MAX_SIZE)
-            logging.info(f"Operation received: {op}")
-
+            logging.info(f"[API_HANDLER] Operation received: {op}")
             send_fixed_data(json.dumps({"ack": True}), client_sock) #ack
 
             response = None
@@ -69,6 +65,7 @@ class ApiHandler:
 
             elif op == "GET BLOCK":
                 hash_received = recv_fixed_data(client_sock, MAX_SIZE)
+                logging.info(f"[API_HANDLER] Hash received: {hash_received}")
 
                 query_socket = create_and_connect(self.query_host, self.query_port)
 
@@ -84,6 +81,7 @@ class ApiHandler:
             
             elif op == "GET BLOCKS BY MINUTE":
                 timestamp_received = recv_fixed_data(client_sock, MAX_SIZE)
+                logging.info(f"[API_HANDLER] Timestamp received: {timestamp_received}")
 
                 query_socket = create_and_connect(self.query_host, self.query_port)
 
@@ -105,8 +103,9 @@ class ApiHandler:
             else:
                 response = json.dumps({"status_code": 404, "message": "Not Found"})
 
+            logging.info(f"[API_HANDLER] Sending response to client: {response}")
             send_fixed_data(response, client_sock)
         except OSError:
-            logging.info("Error while reading socket {}".format(client_sock))
+            logging.info(f"[API_HANDLER] Error while reading socket {client_sock}")
         finally:
             client_sock.close()

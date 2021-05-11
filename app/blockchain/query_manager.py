@@ -8,6 +8,8 @@ from queue import Queue
 MAX_SIZE = 1024
 
 class QueryManager:
+    """Class that handles the querys and forwards them to the blockchain readers"""
+
     def __init__(self, socket_host, socket_port, listen_backlog, n_readers):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((socket_host, socket_port))
@@ -33,7 +35,7 @@ class QueryManager:
     def receive_queries(self):
         while True:
             client_socket = accept_new_connection(self.socket)
-            logging.info(f'[QUERY_MANAGER] Connected with {client_socket}')
+            logging.info(f"[QUERY_MANAGER] Connected with {client_socket}")
             self.__handle_query_connection(client_socket)
     
     def __handle_query_connection(self, client_socket):
@@ -44,20 +46,17 @@ class QueryManager:
         """
         try:
             op = recv_fixed_data(client_socket, MAX_SIZE)
-            logging.info(f'[QUERY_MANAGER] Operation received: {op}')
 
             send_fixed_data(json.dumps({"ack": True}), client_socket) #ack
 
             if op == "GET BLOCK":
                 hash_received = recv_fixed_data(client_socket, MAX_SIZE)
-                logging.info(f"[QUERY_MANAGER] Received hash: {hash_received}")
                 self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
             elif op == "GET BLOCKS BY MINUTE":
                 timestamp_received = recv_fixed_data(client_socket, MAX_SIZE)
-                logging.info(f"[QUERY_MANAGER] Received timestamp: {timestamp_received}")
                 self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 
         except OSError:
-            logging.info("Error while reading socket {}".format(miner_socket))
+            logging.info(f"[QUERY_MANAGER] Error while reading socket {client_socket}")
 

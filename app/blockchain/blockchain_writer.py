@@ -2,6 +2,10 @@ import csv
 import os
 
 class BlockchainWriter:
+    """Class that writes information from the block on different files and indexes.
+    There is one file for every hash_block and one file by day with the hash block and its
+    timestamp (as an index)"""
+    
     def write_block(self, block):
         # file with hash and all information from block
         hash_file_name = str(block.hash()) + '.csv'

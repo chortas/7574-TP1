@@ -7,9 +7,9 @@ from sockets.utils import *
 from common.utils import *
 from stats.stats_writer import StatsWriter
 
-# It should have a thread mining and a thread listening whether it needs to stop mining the block
-
 class Miner(Thread):
+    """Class that mines a block"""
+
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
     blockchain_host, blockchain_port, prev_hash_queue, stats_writer):
         Thread.__init__(self)
@@ -30,7 +30,7 @@ class Miner(Thread):
             block.set_timestamp(get_and_format_datetime_now())
         
         if not self.stop_queue.empty():
-            logging.info(f"I was asked to stop and i'm the miner {self.id}")
+            logging.info(f"[MINER] I was asked to stop and i'm the miner {self.id}")
             self.stop_queue.get()
             self.result_queue.put(False)
             self.stats_writer.add_stat(self.id, False)
@@ -51,17 +51,17 @@ class Miner(Thread):
 
                 # receive result
                 result = json.loads(recv_fixed_data(miner_socket, MAX_SIZE))
-                logging.info(f"Result: {result}")
 
                 # write result in result_queue
                 if result["result"] == "OK":
-                    logging.info(f"I'm the miner {self.id} and I could mine!")
+                    logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
+                    logging.info(f"[MINER] Result from blockchain: {result}")
                     self.result_queue.put(True)
                     hash_obtained = result["hash"]
                     self.prev_hash_queue.put(hash_obtained)
                     self.stats_writer.add_stat(self.id, True)
                 else:
-                    logging.info(f"I'm the miner {self.id} and I couldn't mine!")
+                    logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
                     self.result_queue.put(False)
                     self.stats_writer.add_stat(self.id, False)
 

@@ -6,6 +6,8 @@ import json
 MAX_ENTRIES_AMOUNT = 256
 
 class Block: 
+    """Representation of a block"""
+    
     def __init__(self, entries, header={}, hash_received=0):
         if header != {}:
             self.header = header

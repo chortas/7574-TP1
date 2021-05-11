@@ -1,6 +1,7 @@
 import csv
 
 class StatsWriter:
+    """Class that communicates with miner in order to track metrics"""
 
     def __init__(self, n_miners):
         self.file_name = 'stats.csv'

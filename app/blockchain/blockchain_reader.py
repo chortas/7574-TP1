@@ -7,6 +7,9 @@ from common.block import Block
 from common.utils import *
 
 class BlockchainReader(Thread):
+    """Class that manages the readings from the blockchain, specially obtaining a
+    block given a hash and blocks given a period of time of 1 minute"""
+
     def __init__(self, request_queue, result_queue):
         Thread.__init__(self)
         self.request_queue = request_queue
@@ -16,32 +19,25 @@ class BlockchainReader(Thread):
         while True:
             request = self.request_queue.get()
             operation = request["operation"]
-
-            logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
             
             if operation == "GET BLOCK":
                 hash_received = request["hash"]
-                logging.info(f"[BLOCKCHAIN_READER] Hash received: {hash_received}")
                 client_socket = request["socket"]
                 block = self.get_block(hash_received)
-                logging.info(f"[BLOCKCHAIN_READER] Block: {block}")
                 serialized_block = block.serialize_into_dict() if block != None else {}
                 self.result_queue.put({"socket": client_socket, "result": serialized_block})
             else:
                 first_endpoint = request["timestamp"]
-                logging.info(f"[BLOCKCHAIN_READER] Timestamp received: {first_endpoint}")
                 client_socket = request["socket"]
                 blocks = self.get_blocks_between_minute_interval(first_endpoint)
                 serialized_blocks = [block.serialize_into_dict() for block in blocks]
-                logging.info(f"[BLOCKCHAIN_READER] Blocks: {serialized_blocks}")
                 self.result_queue.put({"socket": client_socket, "result": serialized_blocks})
       
     def get_block(self, block_hash):
         hash_file_name = str(block_hash) + '.csv'
-        logging.info(f"Hash name: {hash_file_name}")
 
         if not os.path.exists(hash_file_name):
-            logging.info("El archivo no existe")
+            logging.info("[BLOCKCHAIN_READER] The file doesn't exist")
             return None
 
         header = {}
