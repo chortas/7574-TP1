@@ -12,7 +12,6 @@ class BlockchainManager(Thread):
 
     def __init__(self, socket_host, socket_port, listen_backlog):
         Thread.__init__(self)
-        self.blocks = []
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
         self.blockchain_writer = BlockchainWriter()
@@ -45,7 +44,6 @@ class BlockchainManager(Thread):
 
     def __add_block(self, new_block):
         if (self.__is_block_valid(new_block)):
-            self.blocks.append(new_block)
             self.last_block_hash = new_block.hash()
             self.blockchain_writer.write_block(new_block)
             return True
