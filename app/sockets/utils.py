@@ -2,6 +2,9 @@ import socket
 import logging
 
 NUM_PARAM_BYTES = 4
+MAX_CHUNK_SIZE = 65536
+MAX_SIZE = 1024
+MAX_BLOCK_LEN = 16777216
 
 def create_and_connect(host, port):
     socket_created = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,29 +30,8 @@ def close(sock):
         pass
     sock.close()
 
-def number_to_4_bytes(num):
-    result = bytearray()
-    for i in range(4):
-        result.append(num & 255)
-        num = num >> 8
-    return result
-
-def bytes_4_to_number(b):
-    res = 0
-    for i in range(4):
-        res += b[i] << (i*8)
-    return res
-
-def send_data(data, socket):
-    socket.send(number_to_4_bytes(len(data)))
-    send_fixed_data(data, socket)
-
 def send_fixed_data(data, socket):
     socket.send(data.encode())
 
 def recv_fixed_data(socket, data_len):
     return socket.recv(data_len).rstrip().decode()    
-
-def recv_data(socket):
-    data_len = bytes_4_to_number(socket.recv(NUM_PARAM_BYTES))
-    return recv_fixed_data(socket, data_len)

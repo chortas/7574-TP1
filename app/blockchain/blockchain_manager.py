@@ -30,7 +30,7 @@ class BlockchainManager(Thread):
         miner socket will also be closed
         """
         try:
-            block_serialized = recv_data(miner_socket)
+            block_serialized = recv_fixed_data(miner_socket, MAX_BLOCK_LEN)
             logging.info(f'Block serialized: {block_serialized}')
             block = Block.deserialize(block_serialized)
             result = {}
@@ -38,7 +38,7 @@ class BlockchainManager(Thread):
                 result = json.dumps({"hash": block.hash(), "result": "OK"})
             else:
                 result = json.dumps({"result": "FAILED"})
-            send_data(result, miner_socket)
+            send_fixed_data(result, miner_socket)
 
         except OSError:
             logging.info("Error while reading socket {}".format(miner_socket))

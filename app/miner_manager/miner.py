@@ -47,10 +47,10 @@ class Miner(Thread):
                 block_serialized = block.serialize()
                 
                 # send block to blockchain
-                send_data(block_serialized, miner_socket)
+                send_fixed_data(block_serialized, miner_socket)
 
                 # receive result
-                result = json.loads(recv_data(miner_socket))
+                result = json.loads(recv_fixed_data(miner_socket, MAX_SIZE))
                 logging.info(f"Result: {result}")
 
                 # write result in result_queue

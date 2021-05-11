@@ -7,10 +7,6 @@ from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
 from queue import Queue
 
-MAX_CHUNK_SIZE = 65536
-MAX_SIZE = 1024
-BLOCK_LEN = 16777216
-
 class ApiHandler:
     def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port, 
     timeout_chunk, limit_chunk, n_clients):
@@ -77,7 +73,7 @@ class ApiHandler:
                 recv_fixed_data(query_socket, MAX_SIZE)
                 send_fixed_data(hash_received, query_socket)
 
-                block = recv_fixed_data(query_socket, BLOCK_LEN)
+                block = recv_fixed_data(query_socket, MAX_BLOCK_LEN)
 
                 close(query_socket)
 
@@ -92,7 +88,7 @@ class ApiHandler:
                 recv_fixed_data(query_socket, MAX_SIZE)
                 send_fixed_data(timestamp_received, query_socket)
 
-                blocks = recv_fixed_data(query_socket, BLOCK_LEN)
+                blocks = recv_fixed_data(query_socket, MAX_BLOCK_LEN)
 
                 close(query_socket)
 
