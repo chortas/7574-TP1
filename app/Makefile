@@ -21,7 +21,7 @@ blockchain:
 
 docker-image:
 	docker build -f ./blockchain/Dockerfile -t "blockchain:latest" .
-	docker build -f ./miner_manager/Dockerfile -t "miner_manager:latest" .
+	docker build -f ./mining/Dockerfile -t "mining:latest" .
 .PHONY: docker-image
 
 docker-compose-up: docker-image

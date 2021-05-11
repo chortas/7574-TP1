@@ -1,11 +1,12 @@
 app/__pycache__/
 app/blockchain/__pycache__/
 app/common/__pycache__/
-app/miner_manager/__pycache__/
+app/mining/__pycache__/
 app/stats/__pycache__/
+app/sockets/__pycache__/
 app/tests/__pycache__/
 app/tests/stats/__pycache__/
-app/tests/miner_manager/__pycache__/
+app/tests/mining/__pycache__/
 app/tests/blockchain/__pycache__/
 app/tests/common/__pycache__/
 .vscode/

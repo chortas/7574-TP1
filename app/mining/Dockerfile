@@ -1,5 +1,5 @@
 FROM python:3.8
-COPY miner_manager /
+COPY mining /
 COPY common /common
 COPY sockets /sockets
 COPY stats /stats

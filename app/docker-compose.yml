@@ -15,9 +15,9 @@ services:
     networks:
       - blockchain_network
 
-  miner_manager:
-    container_name: miner_manager
-    image: miner_manager:latest
+  mining:
+    container_name: mining
+    image: mining:latest
     entrypoint: python3 /main.py
     environment:
       - N_MINERS=5

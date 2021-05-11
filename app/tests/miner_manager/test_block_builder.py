@@ -3,7 +3,7 @@ from common.block import Block
 from queue import Queue
 from time import sleep
 import sys
-from miner_manager.block_builder import BlockBuilder
+from mining.block_builder import BlockBuilder
 
 class TestBlockBuilder:
     def setup_method(self):
