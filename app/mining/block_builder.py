@@ -15,9 +15,6 @@ class BlockBuilder(Thread):
         self.block_queue = block_queue
         self.chunks = []
         self.timeout_chunk = timeout_chunk
-
-    def stop(self):
-        self._stop.set()
     
     def run(self):
         while True:
