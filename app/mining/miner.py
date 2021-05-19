@@ -8,8 +8,6 @@ from sockets.socket import Socket
 from common.utils import *
 from stats.stats_writer import StatsWriter
 
-MAX_SIZE = 1024
-
 class Miner(Thread):
     """Class that mines a block"""
 
@@ -51,10 +49,10 @@ class Miner(Thread):
                 block_serialized = block.serialize()
                 
                 # send block to blockchain
-                miner_socket.send_fixed_data(block_serialized)
+                miner_socket.send_data(block_serialized)
 
                 # receive result
-                result = json.loads(miner_socket.recv_fixed_data(MAX_SIZE))
+                result = json.loads(miner_socket.recv_data())
 
                 # write result in result_queue
                 if result["result"] == "OK":

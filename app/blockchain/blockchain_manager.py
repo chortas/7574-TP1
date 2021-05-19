@@ -7,8 +7,6 @@ from blockchain_writer import BlockchainWriter
 from threading import Thread
 from sockets.socket import Socket
 
-MAX_BLOCK_LEN = 16777216
-
 class BlockchainManager(Thread):
     """Class that receives the bloks procesed by the miners and adds them to the blockchain
     if corresponds""" 
@@ -29,7 +27,7 @@ class BlockchainManager(Thread):
 
     def __handle_miner_connection(self, miner_socket):
         try:
-            block_serialized = miner_socket.recv_fixed_data(MAX_BLOCK_LEN)
+            block_serialized = miner_socket.recv_data()
             block = Block.deserialize(block_serialized)
             result = {}
             if self.__add_block(block):
@@ -37,7 +35,7 @@ class BlockchainManager(Thread):
                 result = json.dumps({"hash": block.hash(), "result": "OK"})
             else:
                 result = json.dumps({"result": "FAILED"})
-            miner_socket.send_fixed_data(result)
+            miner_socket.send_data(result)
 
         except OSError:
             logging.info(f"[BLOCKCHAIN_MANAGER] Error while reading socket {miner_socket}")

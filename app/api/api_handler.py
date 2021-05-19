@@ -7,10 +7,6 @@ from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
 from queue import Queue
 
-MAX_CHUNK_SIZE = 65536
-MAX_SIZE = 1024
-MAX_BLOCK_LEN = 16777216
-
 class ApiHandler:
     """Class that comunicates with the client and forwards the request to the corresponding
     entities"""
@@ -52,14 +48,14 @@ class ApiHandler:
     
     def __handle_client_connection(self, client_socket):
         try:
-            op = client_socket.recv_fixed_data(MAX_SIZE)
+            op = client_socket.recv_data()
             logging.info(f"[API_HANDLER] Operation received: {op}")
-            client_socket.send_fixed_data(json.dumps({"ack": True})) #ack
+            client_socket.send_data(json.dumps({"ack": True})) #ack
 
             response = None
 
             if op == "ADD CHUNK":
-                chunk = client_socket.recv_fixed_data(MAX_CHUNK_SIZE)
+                chunk = client_socket.recv_data()
                 if self.chunk_queue.qsize() == self.limit_chunk:
                     response = json.dumps({"status_code": 503, "message": "The system is overloaded at the moment. Try again later"})
                 else:
@@ -67,34 +63,34 @@ class ApiHandler:
                     response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
 
             elif op == "GET BLOCK":
-                hash_received = client_socket.recv_fixed_data(MAX_SIZE)
+                hash_received = client_socket.recv_data()
                 logging.info(f"[API_HANDLER] Hash received: {hash_received}")
 
                 query_socket = Socket()
                 query_socket.connect(self.query_host, self.query_port)
 
-                query_socket.send_fixed_data(op)
-                query_socket.recv_fixed_data(MAX_SIZE)
-                query_socket.send_fixed_data(hash_received)
+                query_socket.send_data(op)
+                query_socket.recv_data()
+                query_socket.send_data(hash_received)
 
-                block = query_socket.recv_fixed_data(MAX_BLOCK_LEN)
+                block = query_socket.recv_data()
 
                 query_socket.close()
 
                 response = json.dumps({"status_code": 200, "block": block})
             
             elif op == "GET BLOCKS BY MINUTE":
-                timestamp_received = client_socket.recv_fixed_data(MAX_SIZE)
+                timestamp_received = client_socket.recv_data()
                 logging.info(f"[API_HANDLER] Timestamp received: {timestamp_received}")
 
                 query_socket = Socket()
                 query_socket.connect(self.query_host, self.query_port)
                 
-                query_socket.send_fixed_data(op)
-                query_socket.recv_fixed_data(MAX_SIZE)
-                query_socket.send_fixed_data(timestamp_received)
+                query_socket.send_data(op)
+                query_socket.recv_data()
+                query_socket.send_data(timestamp_received)
 
-                blocks = query_socket.recv_fixed_data(MAX_BLOCK_LEN)
+                blocks = query_socket.recv_data()
 
                 query_socket.close()
 
@@ -109,7 +105,7 @@ class ApiHandler:
                 response = json.dumps({"status_code": 404, "message": "Not Found"})
 
             logging.info(f"[API_HANDLER] Sending response to client: {response}")
-            client_socket.send_fixed_data(response)
+            client_socket.send_data(response)
         except OSError:
             logging.info(f"[API_HANDLER] Error while reading socket {client_socket}")
         finally:

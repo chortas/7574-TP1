@@ -6,8 +6,6 @@ from threading import Thread
 from blockchain_reader import BlockchainReader
 from queue import Queue
 
-MAX_SIZE = 1024
-
 class QueryManager:
     """Class that handles the querys and forwards them to the blockchain readers"""
 
@@ -30,7 +28,7 @@ class QueryManager:
     def receive_results(self):
         while True:
             result = self.result_queue.get()
-            result["socket"].send_fixed_data(json.dumps(result["result"]))
+            result["socket"].send_data(json.dumps(result["result"]))
                 
     def receive_queries(self):
         while True:
@@ -45,16 +43,16 @@ class QueryManager:
         miner socket will also be closed
         """
         try:
-            op = client_socket.recv_fixed_data(MAX_SIZE)
+            op = client_socket.recv_data()
 
-            client_socket.send_fixed_data(json.dumps({"ack": True})) #ack
+            client_socket.send_data(json.dumps({"ack": True})) #ack
 
             if op == "GET BLOCK":
-                hash_received = client_socket.recv_fixed_data(MAX_SIZE)
+                hash_received = client_socket.recv_data()
                 self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
             elif op == "GET BLOCKS BY MINUTE":
-                timestamp_received = client_socket.recv_fixed_data(MAX_SIZE)
+                timestamp_received = client_socket.recv_data()
                 self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 
         except OSError:

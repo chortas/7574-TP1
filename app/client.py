@@ -6,8 +6,6 @@ from sockets.socket import Socket
 
 API_PORT = 8080 
 API_HOST = "127.0.0.1"
-MAX_SIZE = 1024
-MAX_BLOCK_LEN = 16777216
 
 def main():
     
@@ -107,30 +105,30 @@ def test_difficulty():
 
 def get_stats(client_socket):
     operation = "GET STATS"
-    client_socket.send_fixed_data(operation)
-    client_socket.recv_fixed_data(MAX_SIZE) #ack
-    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
+    client_socket.send_data(operation)
+    client_socket.recv_data() #ack
+    return client_socket.recv_data()
 
 def get_chunks_by_minute(client_socket, timestamp):
     operation = "GET BLOCKS BY MINUTE"
-    client_socket.send_fixed_data(operation)
-    client_socket.recv_fixed_data(MAX_SIZE) #ack
-    client_socket.send_fixed_data(timestamp)
-    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
+    client_socket.send_data(operation)
+    client_socket.recv_data() #ack
+    client_socket.send_data(timestamp)
+    return client_socket.recv_data()
 
 def get_chunk(client_socket, hash_value):
     operation = "GET BLOCK"
-    client_socket.send_fixed_data(operation)
-    client_socket.recv_fixed_data(MAX_SIZE) #ack
-    client_socket.send_fixed_data(hash_value)
-    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
+    client_socket.send_data(operation)
+    client_socket.recv_data() #ack
+    client_socket.send_data(hash_value)
+    return client_socket.recv_data()
 
 def add_chunk(client_socket, chunk):
     operation = "ADD CHUNK"
-    client_socket.send_fixed_data(operation)
-    client_socket.recv_fixed_data(MAX_SIZE) #ack
-    client_socket.send_fixed_data(chunk)
-    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
+    client_socket.send_data(operation)
+    client_socket.recv_data() #ack
+    client_socket.send_data(chunk)
+    return client_socket.recv_data()
   
 def initialize_log():
     """

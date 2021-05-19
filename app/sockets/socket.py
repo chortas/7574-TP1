@@ -1,10 +1,8 @@
 import socket
 import logging
+from common.utils import *
 
 NUM_PARAM_BYTES = 4
-MAX_CHUNK_SIZE = 65536
-MAX_SIZE = 1024
-MAX_BLOCK_LEN = 16777216
 
 class Socket:
     def __init__(self, socket_built=None):
@@ -30,10 +28,12 @@ class Socket:
             self.socket.shutdown(socket.SHUT_RDWR)
         except:
             pass
-        self.socket.close()
+        self.socket.close() 
 
-    def send_fixed_data(self, data):
+    def send_data(self, data):
+        self.socket.send(number_to_4_bytes(len(data)))
         self.socket.send(data.encode())
 
-    def recv_fixed_data(self, data_len):
-        return self.socket.recv(data_len).rstrip().decode()    
+    def recv_data(self):
+        data_len = bytes_4_to_number(self.socket.recv(NUM_PARAM_BYTES))
+        return self.socket.recv(data_len).rstrip().decode()
