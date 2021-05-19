@@ -37,7 +37,7 @@ def main():
     # test_difficulty()
 
     # Test 10 -> Abro más clientes
-    test_many_clients()
+    #test_many_clients()
 
 def test_many_clients():
     for i in range(256):

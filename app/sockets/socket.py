@@ -35,5 +35,12 @@ class Socket:
         self.socket.sendall(data.encode())
 
     def recv_data(self):
-        data_len = bytes_4_to_number(self.socket.recv(NUM_PARAM_BYTES))
-        return self.socket.recv(data_len).rstrip().decode()
+        data_len = bytes_4_to_number(self.__recvall(NUM_PARAM_BYTES))
+        return self.__recvall(data_len).rstrip().decode()
+
+    def __recvall(self, n):
+        data = b''
+        while len(data) < n:
+            bytes_received = self.socket.recv(n - len(data))
+            data += bytes_received
+        return data
