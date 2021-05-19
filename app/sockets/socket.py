@@ -31,8 +31,8 @@ class Socket:
         self.socket.close() 
 
     def send_data(self, data):
-        self.socket.send(number_to_4_bytes(len(data)))
-        self.socket.send(data.encode())
+        self.socket.sendall(number_to_4_bytes(len(data)))
+        self.socket.sendall(data.encode())
 
     def recv_data(self):
         data_len = bytes_4_to_number(self.socket.recv(NUM_PARAM_BYTES))
