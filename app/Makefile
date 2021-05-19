@@ -44,3 +44,9 @@ test:
 demo:
 	python3 client.py
 .PHONY: demo
+
+restart:
+	make docker-compose-down
+	make docker-compose-up
+	make docker-compose-logs
+.PHONY: restart

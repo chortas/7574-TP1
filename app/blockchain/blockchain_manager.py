@@ -1,10 +1,13 @@
 import socket
 import json
+import logging
 from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
 from blockchain_writer import BlockchainWriter
 from threading import Thread
-from sockets.utils import *
+from sockets.socket import Socket
+
+MAX_BLOCK_LEN = 16777216
 
 class BlockchainManager(Thread):
     """Class that receives the bloks procesed by the miners and adds them to the blockchain
@@ -15,19 +18,18 @@ class BlockchainManager(Thread):
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
         self.blockchain_writer = BlockchainWriter()
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((socket_host, socket_port))
-        self.socket.listen(listen_backlog)
+        self.socket = Socket()
+        self.socket.bind_and_listen(socket_host, socket_port, listen_backlog)
 
     def run(self):
         while True:
-            miner_socket = accept_new_connection(self.socket)
+            miner_socket = self.socket.accept_new_connection()
             logging.info(f"[BLOCKCHAIN_MANAGER] Connected with {miner_socket}")
             self.__handle_miner_connection(miner_socket)
 
     def __handle_miner_connection(self, miner_socket):
         try:
-            block_serialized = recv_fixed_data(miner_socket, MAX_BLOCK_LEN)
+            block_serialized = miner_socket.recv_fixed_data(MAX_BLOCK_LEN)
             block = Block.deserialize(block_serialized)
             result = {}
             if self.__add_block(block):
@@ -35,7 +37,7 @@ class BlockchainManager(Thread):
                 result = json.dumps({"hash": block.hash(), "result": "OK"})
             else:
                 result = json.dumps({"result": "FAILED"})
-            send_fixed_data(result, miner_socket)
+            miner_socket.send_fixed_data(result)
 
         except OSError:
             logging.info(f"[BLOCKCHAIN_MANAGER] Error while reading socket {miner_socket}")

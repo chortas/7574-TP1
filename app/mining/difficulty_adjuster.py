@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 TARGET_TIME_IN_SECONDS = 12 
 BLOCKS_PROCESSED_TO_ADJUST_DIFFICULTY = 256

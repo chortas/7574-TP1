@@ -1,7 +1,7 @@
+import logging
 from common.block import Block
 from queue import Empty
 from threading import Thread
-import logging
 
 MAXIMUM_CHUNKS_BY_BLOCK = 256
 MAX_WAIT_TIME = 15

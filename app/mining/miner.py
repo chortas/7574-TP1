@@ -1,11 +1,14 @@
 import datetime
-from common.cryptographic_solver import CryptographicSolver
 from threading import Thread
 import socket
 import json
-from sockets.utils import *
+import logging
+from common.cryptographic_solver import CryptographicSolver
+from sockets.socket import Socket
 from common.utils import *
 from stats.stats_writer import StatsWriter
+
+MAX_SIZE = 1024
 
 class Miner(Thread):
     """Class that mines a block"""
@@ -43,14 +46,15 @@ class Miner(Thread):
             block = self.block_queue.get()
             is_mine_ok = self.mine(block)
             if is_mine_ok:
-                miner_socket = create_and_connect(self.blockchain_host, self.blockchain_port)
+                miner_socket = Socket()
+                miner_socket.connect(self.blockchain_host, self.blockchain_port)
                 block_serialized = block.serialize()
                 
                 # send block to blockchain
-                send_fixed_data(block_serialized, miner_socket)
+                miner_socket.send_fixed_data(block_serialized)
 
                 # receive result
-                result = json.loads(recv_fixed_data(miner_socket, MAX_SIZE))
+                result = json.loads(miner_socket.recv_fixed_data(MAX_SIZE))
 
                 # write result in result_queue
                 if result["result"] == "OK":
@@ -65,6 +69,5 @@ class Miner(Thread):
                     self.result_queue.put(False)
                     self.stats_writer.add_stat(self.id, False)
 
-                # send to stat
-                close(miner_socket)
+                miner_socket.close()
             self.block_queue.task_done()

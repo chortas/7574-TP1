@@ -1,6 +1,7 @@
 import socket
 import json
-from sockets.utils import *
+import logging
+from sockets.socket import Socket
 from threading import Thread
 from blockchain_reader import BlockchainReader
 from queue import Queue
@@ -11,9 +12,8 @@ class QueryManager:
     """Class that handles the querys and forwards them to the blockchain readers"""
 
     def __init__(self, socket_host, socket_port, listen_backlog, n_readers):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((socket_host, socket_port))
-        self.socket.listen(listen_backlog)
+        self.socket = Socket()
+        self.socket.bind_and_listen(socket_host, socket_port, listen_backlog)
         self.n_readers = n_readers
         self.request_queue = Queue()
         self.result_queue = Queue()
@@ -30,11 +30,11 @@ class QueryManager:
     def receive_results(self):
         while True:
             result = self.result_queue.get()
-            send_fixed_data(json.dumps(result["result"]), result["socket"])
+            result["socket"].send_fixed_data(json.dumps(result["result"]))
                 
     def receive_queries(self):
         while True:
-            client_socket = accept_new_connection(self.socket)
+            client_socket = self.socket.accept_new_connection()
             logging.info(f"[QUERY_MANAGER] Connected with {client_socket}")
             self.__handle_query_connection(client_socket)
     
@@ -45,16 +45,16 @@ class QueryManager:
         miner socket will also be closed
         """
         try:
-            op = recv_fixed_data(client_socket, MAX_SIZE)
+            op = client_socket.recv_fixed_data(MAX_SIZE)
 
-            send_fixed_data(json.dumps({"ack": True}), client_socket) #ack
+            client_socket.send_fixed_data(json.dumps({"ack": True})) #ack
 
             if op == "GET BLOCK":
-                hash_received = recv_fixed_data(client_socket, MAX_SIZE)
+                hash_received = client_socket.recv_fixed_data(MAX_SIZE)
                 self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
             elif op == "GET BLOCKS BY MINUTE":
-                timestamp_received = recv_fixed_data(client_socket, MAX_SIZE)
+                timestamp_received = client_socket.recv_fixed_data(MAX_SIZE)
                 self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 
         except OSError:

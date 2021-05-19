@@ -1,10 +1,13 @@
 import socket
 import logging
 from time import sleep
-from sockets.utils import *
+from threading import Thread
+from sockets.socket import Socket
 
 API_PORT = 8080 
 API_HOST = "127.0.0.1"
+MAX_SIZE = 1024
+MAX_BLOCK_LEN = 16777216
 
 def main():
     
@@ -21,13 +24,13 @@ def main():
     # test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    # test_get_block_by_known_hash("94872455518301211611174060337313215717928923152270874949483639728561342568220")
+    # test_get_block_by_known_hash("59115117366315300477069613747820890742517990123935046539738232012885817392694")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
     # test_get_blocks_by_unknown_timestamp()
 
     # Test 7 -> Si se pide un bloque con un timestamp conocido <reemplazar en demo> devuelve el correspondiente
-    # test_get_blocks_by_known_timestamp("2021-05-11 21:57")
+    # test_get_blocks_by_known_timestamp("2021-05-19 22:32")
 
     # Test 8 -> Si se piden las stats se dan las correctas
     # test_get_stats()
@@ -35,80 +38,99 @@ def main():
     # Test 9 -> Si se agregan más de 256 bloques se ajusta la dificultad
     # test_difficulty()
 
+    # Test 10 -> Abro más clientes
+    # test_many_clients()
+
+def test_many_clients():
+    for i in range(256):
+        client_socket = Socket()
+        client_socket.connect(API_HOST, API_PORT)
+        client = Thread(target=add_chunk, args=(client_socket,str(i)))
+        client.start()
+
 def test_add_chunks_until_limit():
     for i in range(256):
-        client_socket = create_and_connect(API_HOST, API_PORT)
+        client_socket = Socket()
+        client_socket.connect(API_HOST, API_PORT)
         result = add_chunk(client_socket, str(i))
-        close(client_socket)
+        client_socket.close()
 
 def test_chunk_is_sent_if_timeout():
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     add_chunk(client_socket, "1")
     sleep(15) # timeout is 15
-    close(client_socket)
+    client_socket.close()
 
 def test_add_chunks_past_limit():
     for i in range(256*2):
-        client_socket = create_and_connect(API_HOST, API_PORT)
+        client_socket = Socket()
+        client_socket.connect(API_HOST, API_PORT)
         result = add_chunk(client_socket, str(i))
-        close(client_socket)
+        client_socket.close()
 
 def test_get_block_by_unknown_hash():
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     result = get_chunk(client_socket, "0")
     print(result)
 
 def test_get_block_by_known_hash(hash_value):
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     result = get_chunk(client_socket, hash_value)
     print(result)
 
 def test_get_blocks_by_unknown_timestamp():
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     result = get_chunks_by_minute(client_socket, "2021-02-11 22:00")
     print(result)
 
 def test_get_blocks_by_known_timestamp(timestamp):
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     result = get_chunks_by_minute(client_socket, timestamp)
     print(result)
 
 def test_get_stats():
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     result = get_stats(client_socket)
     print(result)
 
 def test_difficulty():
-    client_socket = create_and_connect(API_HOST, API_PORT)
+    client_socket = Socket()
+    client_socket.connect(API_HOST, API_PORT)
     for i in range(257):
         test_add_chunks_until_limit()
 
 def get_stats(client_socket):
     operation = "GET STATS"
-    send_fixed_data(operation, client_socket)
-    recv_fixed_data(client_socket, MAX_SIZE) #ack
-    return recv_fixed_data(client_socket, MAX_BLOCK_LEN)
+    client_socket.send_fixed_data(operation)
+    client_socket.recv_fixed_data(MAX_SIZE) #ack
+    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
 
 def get_chunks_by_minute(client_socket, timestamp):
     operation = "GET BLOCKS BY MINUTE"
-    send_fixed_data(operation, client_socket)
-    recv_fixed_data(client_socket, MAX_SIZE) #ack
-    send_fixed_data(timestamp, client_socket)
-    return recv_fixed_data(client_socket, MAX_BLOCK_LEN)
+    client_socket.send_fixed_data(operation)
+    client_socket.recv_fixed_data(MAX_SIZE) #ack
+    client_socket.send_fixed_data(timestamp)
+    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
 
 def get_chunk(client_socket, hash_value):
     operation = "GET BLOCK"
-    send_fixed_data(operation, client_socket)
-    recv_fixed_data(client_socket, MAX_SIZE) #ack
-    send_fixed_data(hash_value, client_socket)
-    return recv_fixed_data(client_socket, MAX_BLOCK_LEN)
+    client_socket.send_fixed_data(operation)
+    client_socket.recv_fixed_data(MAX_SIZE) #ack
+    client_socket.send_fixed_data(hash_value)
+    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
 
 def add_chunk(client_socket, chunk):
     operation = "ADD CHUNK"
-    send_fixed_data(operation, client_socket)
-    recv_fixed_data(client_socket, MAX_SIZE) #ack
-    send_fixed_data(chunk, client_socket)
-    return recv_fixed_data(client_socket, MAX_BLOCK_LEN)
+    client_socket.send_fixed_data(operation)
+    client_socket.recv_fixed_data(MAX_SIZE) #ack
+    client_socket.send_fixed_data(chunk)
+    return client_socket.recv_fixed_data(MAX_BLOCK_LEN)
   
 def initialize_log():
     """
