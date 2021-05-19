@@ -13,7 +13,7 @@ def main():
     # test_add_chunks_until_limit()
 
     # Test 2 -> Si hay <256 chunks, después de cierto timeout configurable se manda
-    # test_chunk_is_sent_if_timeout()
+    test_chunk_is_sent_if_timeout()
 
     # Test 3 -> Si se manda más de 256 chunks se envian en bloques distintos
     # test_add_chunks_past_limit()

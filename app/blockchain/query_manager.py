@@ -57,4 +57,5 @@ class QueryManager:
 
         except OSError:
             logging.info(f"[QUERY_MANAGER] Error while reading socket {client_socket}")
-
+        finally:
+            client_socket.close()
