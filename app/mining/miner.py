@@ -12,7 +12,7 @@ class Miner(Thread):
     """Class that mines a block"""
 
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
-    blockchain_host, blockchain_port, prev_hash_queue, stats_writer):
+    blockchain_host, blockchain_port, prev_hash_queue, stats_writer, ack_stop_queue):
         Thread.__init__(self)
         self.cryptographic_solver = CryptographicSolver()
         self.block_queue = block_queue
@@ -23,6 +23,7 @@ class Miner(Thread):
         self.blockchain_port = blockchain_port
         self.prev_hash_queue = prev_hash_queue
         self.stats_writer = stats_writer
+        self.ack_stop_queue = ack_stop_queue
 
     def mine(self, block):
         block.set_timestamp(get_and_format_datetime_now())
@@ -33,8 +34,9 @@ class Miner(Thread):
         if not self.stop_queue.empty():
             logging.info(f"[MINER] I was asked to stop and i'm the miner {self.id}")
             self.stop_queue.get()
-            self.result_queue.put(False)
+            self.result_queue.put((False, self.id))
             self.stats_writer.add_stat(self.id, False)
+            self.ack_stop_queue.put(True)
             return False
         
         return True
@@ -58,14 +60,14 @@ class Miner(Thread):
                 if result["result"] == "OK":
                     logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
                     logging.info(f"[MINER] Result from blockchain: {result}")
-                    self.result_queue.put(True)
+                    self.result_queue.put((True, self.id))
                     hash_obtained = result["hash"]
                     self.prev_hash_queue.put(hash_obtained)
                     self.stats_writer.add_stat(self.id, True)
                 else:
                     logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
-                    self.result_queue.put(False)
+                    self.ack_stop_queue.put(True)
+                    self.result_queue.put((False, self.id))
                     self.stats_writer.add_stat(self.id, False)
 
                 miner_socket.close()
-            self.block_queue.task_done()

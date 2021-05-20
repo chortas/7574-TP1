@@ -1,6 +1,7 @@
 import socket
 import json
 import logging
+from time import sleep
 from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
 from blockchain_writer import BlockchainWriter
@@ -22,7 +23,6 @@ class BlockchainManager(Thread):
     def run(self):
         while True:
             miner_socket = self.socket.accept_new_connection()
-            logging.info(f"[BLOCKCHAIN_MANAGER] Connected with {miner_socket}")
             self.__handle_miner_connection(miner_socket)
 
     def __handle_miner_connection(self, miner_socket):
@@ -31,6 +31,7 @@ class BlockchainManager(Thread):
             block = Block.deserialize(block_serialized)
             result = {}
             if self.__add_block(block):
+                sleep(3)
                 logging.info(f"[BLOCKCHAIN_MANAGER] Block added: {block}")
                 result = json.dumps({"hash": block.hash(), "result": "OK"})
             else:

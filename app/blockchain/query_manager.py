@@ -28,12 +28,13 @@ class QueryManager:
     def receive_results(self):
         while True:
             result = self.result_queue.get()
-            result["socket"].send_data(json.dumps(result["result"]))
+            client_socket = result["socket"]
+            client_socket.send_data(json.dumps(result["result"]))
+            client_socket.close()
                 
     def receive_queries(self):
         while True:
             client_socket = self.socket.accept_new_connection()
-            logging.info(f"[QUERY_MANAGER] Connected with {client_socket}")
             self.__handle_query_connection(client_socket)
     
     def __handle_query_connection(self, client_socket):
@@ -57,5 +58,3 @@ class QueryManager:
 
         except OSError:
             logging.info(f"[QUERY_MANAGER] Error while reading socket {client_socket}")
-        finally:
-            client_socket.close()

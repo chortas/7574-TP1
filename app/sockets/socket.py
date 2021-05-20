@@ -20,7 +20,6 @@ class Socket:
 
     def accept_new_connection(self):
         conn, addr = self.socket.accept()
-        logging.info('Got connection from {}'.format(addr))
         return Socket(conn)
 
     def close(self):

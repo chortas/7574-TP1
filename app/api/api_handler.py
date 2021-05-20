@@ -70,10 +70,14 @@ class ApiHandler:
                 query_socket.connect(self.query_host, self.query_port)
 
                 query_socket.send_data(op)
+                logging.info(f"[API_HANDLER] Sent operation")
                 query_socket.recv_data()
+                logging.info(f"[API_HANDLER] Recv ack")
                 query_socket.send_data(hash_received)
+                logging.info(f"[API_HANDLER] Sent hash")
 
                 block = query_socket.recv_data()
+                logging.info(f"[API_HANDLER] Received block")
 
                 query_socket.close()
 

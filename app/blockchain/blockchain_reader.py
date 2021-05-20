@@ -19,6 +19,7 @@ class BlockchainReader(Thread):
         while True:
             request = self.request_queue.get()
             operation = request["operation"]
+            logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
             
             if operation == "GET BLOCK":
                 hash_received = request["hash"]
