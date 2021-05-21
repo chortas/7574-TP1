@@ -1,4 +1,5 @@
 import json
+import logging
 from hashlib import sha256
 from datetime import datetime
 
@@ -25,27 +26,43 @@ class Block:
         
         self.entries = entries
         self.hash_given = hash_received
+        self.hash_calculated = None
             
     def hash(self):
-        return int(sha256(repr(self.header).encode('utf-8') + repr(self.entries).encode('utf-8')).hexdigest(), 16)
+        if self.hash_calculated == None:
+            logging.info("Calculating hash...")
+            self.hash_calculated = int(sha256(repr(self.header).encode('utf-8') + repr(self.entries).encode('utf-8')).hexdigest(), 16)
+        else:
+            logging.info("Not calculating hash!")
+        return self.hash_calculated
+
+    def __invalidate_calculated_hash(fn):
+        def wrapper(self, *args, **kwargs):
+            self.hash_calculated = None
+            fn(self, *args, **kwargs)
+        return wrapper
+
+    @__invalidate_calculated_hash
+    def set_prev_hash(self, prev_hash):
+        self.header['prev_hash'] = prev_hash
+
+    @__invalidate_calculated_hash
+    def set_timestamp(self, timestamp):
+        self.header['timestamp'] = timestamp
+
+    @__invalidate_calculated_hash
+    def add_nonce(self):
+        self.header['nonce'] += 1
+    
+    @__invalidate_calculated_hash
+    def set_difficulty(self, difficulty):
+        self.header['difficulty'] = difficulty
 
     def get_hash(self):
         return self.hash_given
 
-    def set_prev_hash(self, prev_hash):
-        self.header['prev_hash'] = prev_hash
-
-    def set_timestamp(self, timestamp):
-        self.header['timestamp'] = timestamp
-
-    def add_nonce(self):
-        self.header['nonce'] += 1
-
     def get_difficulty(self):
         return self.header['difficulty']
-    
-    def set_difficulty(self, difficulty):
-        self.header['difficulty'] = difficulty
 
     def get_prev_hash(self):
         return self.header['prev_hash']
