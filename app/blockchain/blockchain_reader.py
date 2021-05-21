@@ -79,7 +79,7 @@ class BlockchainReader(Thread):
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 timestamp = datetime.strptime(row['timestamp'], FULL_DATE_FORMAT)
-                if timestamp >= first_endpoint and timestamp <= second_endpoint:
+                if first_endpoint <= timestamp <= second_endpoint:
                     block_hash = int(row['hash'])
                     blocks.append(self.__get_block(block_hash))
 

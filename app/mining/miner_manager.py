@@ -9,7 +9,7 @@ from stats.stats_writer import StatsWriter
 class MinerManager(Thread):
     """Class that communicates with the miners in order to mine blocks"""
 
-    def __init__(self, n_miners, blockchain_host, blockchain_port, block_queue):
+    def __init__(self, n_miners, blockchain_host, blockchain_port, block_queue, stats):
         Thread.__init__(self)
         self.n_miners = n_miners
         self.miner_block_queues = [Queue() for _ in range(n_miners)]
@@ -17,7 +17,7 @@ class MinerManager(Thread):
         self.result_queue = Queue()
         self.ack_stop_queue = Queue()
         self.miners = [Miner(self.miner_block_queues[i], self.stop_queues[i], self.result_queue, 
-        i, blockchain_host, blockchain_port, StatsWriter(self.n_miners), self.ack_stop_queue) 
+        i, blockchain_host, blockchain_port, stats, self.ack_stop_queue) 
         for i in range(n_miners)]
         self.prev_hash = 0
         self.difficulty_adjuster = DifficultyAdjuster()

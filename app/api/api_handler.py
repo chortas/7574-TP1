@@ -13,7 +13,7 @@ class ApiHandler:
     entities"""
 
     def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port, 
-    timeout_chunk, limit_chunk, n_clients):
+    timeout_chunk, limit_chunk, n_clients, stats):
         self.socket = Socket()
         self.socket.bind_and_listen('', socket_port, listen_backlog)
 
@@ -24,9 +24,11 @@ class ApiHandler:
         self.block_queue = miner_manager.get_block_queue()
         self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue, timeout_chunk)
 
-        self.stats_reader_queue = Queue()
-        self.stats_reader_result_queue = Queue()
-        self.stats_reader = StatsReader(self.stats_reader_queue, self.stats_reader_result_queue)
+        self.stats = stats
+
+        #self.stats_reader_queue = Queue()
+        #self.stats_reader_result_queue = Queue()
+        #self.stats_reader = StatsReader(self.stats_reader_queue, self.stats_reader_result_queue)
 
         self.query_host = query_host
         self.query_port = query_port
@@ -34,7 +36,7 @@ class ApiHandler:
         self.runners = [Thread(target=self.run) for i in range(n_clients)]
 
     def start_readers(self):
-        self.stats_reader.start()
+        #self.stats_reader.start()
         self.block_builder.start()
         self.miner_manager.start()
         for runner in self.runners:
@@ -100,8 +102,9 @@ class ApiHandler:
         return json.dumps({"status_code": 200, "block": block})
     
     def __handle_stats_query(self):
-        self.stats_reader_queue.put(True)
-        stats = self.stats_reader_result_queue.get()
+        stats = self.stats.read_stats()
+        #self.stats_reader_queue.put(True)
+        #stats = self.stats_reader_result_queue.get()
         return json.dumps({"status_code": 200, "result": stats})
 
     def __handle_unknown_query(self):

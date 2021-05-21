@@ -10,7 +10,7 @@ class Miner(Process):
     """Class that mines a block"""
 
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
-    blockchain_host, blockchain_port, stats_writer, ack_stop_queue):
+    blockchain_host, blockchain_port, stats, ack_stop_queue):
         Process.__init__(self)
         self.cryptographic_solver = CryptographicSolver()
         self.block_queue = block_queue
@@ -19,7 +19,7 @@ class Miner(Process):
         self.id = miner_id
         self.blockchain_host = blockchain_host
         self.blockchain_port = blockchain_port
-        self.stats_writer = stats_writer
+        self.stats = stats
         self.ack_stop_queue = ack_stop_queue
 
     def mine(self, block):
@@ -32,7 +32,7 @@ class Miner(Process):
             logging.info(f"[MINER] I was asked to stop and i'm the miner {self.id}")
             self.stop_queue.get()
             self.result_queue.put((None, self.id))
-            self.stats_writer.add_stat(self.id, False)
+            self.stats.write_stat(self.id, False)
             self.ack_stop_queue.put(True)
             return False
         
@@ -65,11 +65,11 @@ class Miner(Process):
         logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
         logging.info(f"[MINER] Result from blockchain: {hash_obtained}")
         self.result_queue.put((hash_obtained, self.id))
-        self.stats_writer.add_stat(self.id, True)
+        self.stats.write_stat(self.id, True)
 
     def __handle_failed_result(self):
         logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
         self.ack_stop_queue.put(True)
         self.result_queue.put((None, self.id))
-        self.stats_writer.add_stat(self.id, False)
+        self.stats.write_stat(self.id, False)
         

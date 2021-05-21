@@ -23,7 +23,7 @@ def main():
     # test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_block_by_known_hash("91470761962199946417132762827579287019889068241650905763377399187192114185011")
+    # test_get_block_by_known_hash("91470761962199946417132762827579287019889068241650905763377399187192114185011")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
     # test_get_blocks_by_unknown_timestamp()
@@ -32,7 +32,7 @@ def main():
     # test_get_blocks_by_known_timestamp("2021-05-21 00:53")
 
     # Test 8 -> Si se piden las stats se dan las correctas
-    # test_get_stats()
+    test_get_stats()
 
     # Test 9 -> Si se agregan más de 256 bloques se ajusta la dificultad
     # test_difficulty()
