@@ -4,8 +4,8 @@ import logging
 class StatsWriter:
     """Class that communicates with miner in order to track metrics"""
 
-    def __init__(self, n_miners):
-        self.file_name = 'stats.csv'
+    def __init__(self, n_miners, file_name):
+        self.file_name = file_name
         self.fieldnames = ['id_miner', 'n_succeeded', 'n_failed']
         with open(self.file_name, mode='w') as stats_file:
             writer = csv.DictWriter(stats_file, fieldnames=self.fieldnames)

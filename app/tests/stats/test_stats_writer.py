@@ -6,7 +6,7 @@ from stats.stats_writer import StatsWriter
 class TestStatsWriter:
 
     def setup_method(self, method):
-        self.stats_writer = StatsWriter(3)
+        self.stats_writer = StatsWriter(3, 'stats.csv')
         
     def teardown_method(self):
         os.remove('stats.csv')

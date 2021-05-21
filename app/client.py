@@ -11,7 +11,9 @@ API_HOST = "127.0.0.1"
 def main():
     
     # Test 1 -> Guardar 256 chunks consiste en guardar 1 bloque
-    # test_add_chunks_until_limit()
+    test_add_chunks_until_limit()
+
+    sleep(2)
 
     # Test 2 -> Si hay <256 chunks, después de cierto timeout configurable se manda
     # test_chunk_is_sent_if_timeout()

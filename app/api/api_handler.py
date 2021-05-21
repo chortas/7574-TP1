@@ -8,7 +8,7 @@ from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
 from common.utils import *
 
-class ApiHandler:
+class ApiHandler():
     """Class that comunicates with the client and forwards the request to the corresponding
     entities"""
 
