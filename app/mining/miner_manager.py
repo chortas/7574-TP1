@@ -15,11 +15,10 @@ class MinerManager(Thread):
         self.miner_block_queues = [Queue() for _ in range(n_miners)]
         self.stop_queues = [Queue() for _ in range(n_miners)]
         self.result_queue = Queue()
-        self.prev_hash_queues = [Queue() for _ in range(n_miners)]
         self.ack_stop_queue = Queue()
         self.miners = [Miner(self.miner_block_queues[i], self.stop_queues[i], self.result_queue, 
-        i, blockchain_host, blockchain_port, self.prev_hash_queues[i],
-        StatsWriter(self.n_miners), self.ack_stop_queue) for i in range(n_miners)]
+        i, blockchain_host, blockchain_port, StatsWriter(self.n_miners), self.ack_stop_queue) 
+        for i in range(n_miners)]
         self.prev_hash = 0
         self.difficulty_adjuster = DifficultyAdjuster()
         self.block_queue = block_queue
@@ -32,7 +31,6 @@ class MinerManager(Thread):
     def run(self):
         while True:
             block = self.block_queue.get()
-            logging.info("Puse un bloque para que se procese")
             block.set_prev_hash(self.prev_hash)
             block.set_difficulty(self.difficulty_adjuster.get_difficulty())
             queues_to_send = self.miner_block_queues[:]
@@ -46,11 +44,11 @@ class MinerManager(Thread):
 
     def __receive_results(self):
         for _ in range(self.n_miners):
-            could_mine, id_miner = self.result_queue.get()
-            if could_mine:
-                logging.info(f"[MINER_MANAGER] The miner {id_miner} could mine {could_mine}")
+            hash_obtained, id_miner = self.result_queue.get()
+            if hash_obtained != None:
+                logging.info(f"[MINER_MANAGER] The miner {id_miner} could mine with hash {hash_obtained}")
                 self.__stop_miners(id_miner)
-                self.prev_hash = self.prev_hash_queues[id_miner].get()
+                self.prev_hash = hash_obtained
                 self.difficulty_adjuster.add_block_to_count()
     
     def __stop_miners(self, id_miner):

@@ -11,7 +11,7 @@ API_HOST = "127.0.0.1"
 def main():
     
     # Test 1 -> Guardar 256 chunks consiste en guardar 1 bloque
-    # test_add_chunks_until_limit()
+    test_add_chunks_until_limit()
 
     # Test 2 -> Si hay <256 chunks, después de cierto timeout configurable se manda
     # test_chunk_is_sent_if_timeout()
@@ -23,13 +23,13 @@ def main():
     # test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_block_by_known_hash("50466779778516501352908841980653484959556510062583205697470303835434776608808")
+    # test_get_block_by_known_hash("50466779778516501352908841980653484959556510062583205697470303835434776608808")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
     # test_get_blocks_by_unknown_timestamp()
 
     # Test 7 -> Si se pide un bloque con un timestamp conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_blocks_by_known_timestamp("2021-05-21 00:53")
+    # test_get_blocks_by_known_timestamp("2021-05-21 00:53")
 
     # Test 8 -> Si se piden las stats se dan las correctas
     # test_get_stats()
@@ -38,7 +38,7 @@ def main():
     # test_difficulty()
 
     # Test 10 -> Abro más clientes
-    test_many_clients()
+    # test_many_clients()
 
 def test_many_clients():
     for i in range(256):

@@ -10,7 +10,7 @@ class Miner(Thread):
     """Class that mines a block"""
 
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
-    blockchain_host, blockchain_port, prev_hash_queue, stats_writer, ack_stop_queue):
+    blockchain_host, blockchain_port, stats_writer, ack_stop_queue):
         Thread.__init__(self)
         self.cryptographic_solver = CryptographicSolver()
         self.block_queue = block_queue
@@ -19,7 +19,6 @@ class Miner(Thread):
         self.id = miner_id
         self.blockchain_host = blockchain_host
         self.blockchain_port = blockchain_port
-        self.prev_hash_queue = prev_hash_queue
         self.stats_writer = stats_writer
         self.ack_stop_queue = ack_stop_queue
 
@@ -32,7 +31,7 @@ class Miner(Thread):
         if not self.stop_queue.empty():
             logging.info(f"[MINER] I was asked to stop and i'm the miner {self.id}")
             self.stop_queue.get()
-            self.result_queue.put((False, self.id))
+            self.result_queue.put((None, self.id))
             self.stats_writer.add_stat(self.id, False)
             self.ack_stop_queue.put(True)
             return False
@@ -65,13 +64,12 @@ class Miner(Thread):
     def __handle_ok_result(self, hash_obtained):
         logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
         logging.info(f"[MINER] Result from blockchain: {hash_obtained}")
-        self.result_queue.put((True, self.id))
-        self.prev_hash_queue.put(hash_obtained)
+        self.result_queue.put((hash_obtained, self.id))
         self.stats_writer.add_stat(self.id, True)
 
     def __handle_failed_result(self):
         logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
         self.ack_stop_queue.put(True)
-        self.result_queue.put((False, self.id))
+        self.result_queue.put((None, self.id))
         self.stats_writer.add_stat(self.id, False)
         
