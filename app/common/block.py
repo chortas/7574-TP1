@@ -1,7 +1,8 @@
+import json
 from hashlib import sha256
 from datetime import datetime
+
 from common.utils import *
-import json
 
 MAX_ENTRIES_AMOUNT = 256
 

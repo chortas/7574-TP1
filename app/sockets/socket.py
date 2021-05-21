@@ -1,5 +1,5 @@
 import socket
-import logging
+
 from common.utils import *
 
 NUM_PARAM_BYTES = 4

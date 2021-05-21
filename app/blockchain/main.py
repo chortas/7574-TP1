@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import os
+
 from blockchain_manager import BlockchainManager
 from query_manager import QueryManager
 

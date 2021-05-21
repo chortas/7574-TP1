@@ -3,6 +3,7 @@ import os
 import logging
 from datetime import datetime, timedelta
 from threading import Thread
+
 from common.block import Block
 from common.utils import *
 
@@ -24,17 +25,17 @@ class BlockchainReader(Thread):
             if operation == GET_BLOCK_BY_HASH_OP:
                 hash_received = request["hash"]
                 client_socket = request["socket"]
-                block = self.get_block(hash_received)
+                block = self.__get_block(hash_received)
                 serialized_block = block.serialize_into_dict() if block != None else {}
                 self.result_queue.put({"socket": client_socket, "result": serialized_block})
             else:
                 first_endpoint = request["timestamp"]
                 client_socket = request["socket"]
-                blocks = self.get_blocks_between_minute_interval(first_endpoint)
+                blocks = self.__get_blocks_between_minute_interval(first_endpoint)
                 serialized_blocks = [block.serialize_into_dict() for block in blocks]
                 self.result_queue.put({"socket": client_socket, "result": serialized_blocks})
       
-    def get_block(self, block_hash):
+    def __get_block(self, block_hash):
         hash_file_name = str(block_hash) + '.csv'
 
         if not os.path.exists(hash_file_name):
@@ -58,7 +59,7 @@ class BlockchainReader(Thread):
 
         return Block(entries, header)
 
-    def get_blocks_between_minute_interval(self, first_endpoint):
+    def __get_blocks_between_minute_interval(self, first_endpoint):
         try:
             first_endpoint = datetime.strptime(first_endpoint, MINUTE_FORMAT)
         except ValueError:
@@ -80,7 +81,7 @@ class BlockchainReader(Thread):
                 timestamp = datetime.strptime(row['timestamp'], FULL_DATE_FORMAT)
                 if timestamp >= first_endpoint and timestamp <= second_endpoint:
                     block_hash = int(row['hash'])
-                    blocks.append(self.get_block(block_hash))
+                    blocks.append(self.__get_block(block_hash))
 
         return blocks
         

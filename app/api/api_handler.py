@@ -1,12 +1,12 @@
-import socket
 import logging
 import json
 from threading import Thread
+from queue import Queue
+
 from sockets.socket import Socket
 from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
 from common.utils import *
-from queue import Queue
 
 class ApiHandler:
     """Class that comunicates with the client and forwards the request to the corresponding
@@ -50,68 +50,59 @@ class ApiHandler:
     def __handle_client_connection(self, client_socket):
         try:
             op = client_socket.recv_data()
-            logging.info(f"[API_HANDLER] Operation received: {op}")
             client_socket.send_data(json.dumps({"ack": True})) #ack
 
             response = None
 
             if op == ADD_CHUNK_CODE_OP:
-                chunk = client_socket.recv_data()
-                if self.chunk_queue.qsize() == self.limit_chunk:
-                    response = json.dumps({"status_code": 503, "message": "The system is overloaded at the moment. Try again later"})
-                else:
-                    self.chunk_queue.put(chunk)
-                    response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
-
-            elif op == GET_BLOCK_BY_HASH_OP:
-                hash_received = client_socket.recv_data()
-                logging.info(f"[API_HANDLER] Hash received: {hash_received}")
-
-                query_socket = Socket()
-                query_socket.connect(self.query_host, self.query_port)
-
-                query_socket.send_data(op)
-                logging.info(f"[API_HANDLER] Sent operation")
-                query_socket.recv_data()
-                logging.info(f"[API_HANDLER] Recv ack")
-                query_socket.send_data(hash_received)
-                logging.info(f"[API_HANDLER] Sent hash")
-
-                block = query_socket.recv_data()
-                logging.info(f"[API_HANDLER] Received block")
-
-                query_socket.close()
-
-                response = json.dumps({"status_code": 200, "block": block})
-            
-            elif op == GET_BLOCKS_BY_TIMESTAMP_OP:
-                timestamp_received = client_socket.recv_data()
-                logging.info(f"[API_HANDLER] Timestamp received: {timestamp_received}")
-
-                query_socket = Socket()
-                query_socket.connect(self.query_host, self.query_port)
+                response = self.__handle_add_chunk(client_socket)
                 
-                query_socket.send_data(op)
-                query_socket.recv_data()
-                query_socket.send_data(timestamp_received)
-
-                blocks = query_socket.recv_data()
-
-                query_socket.close()
-
-                response = json.dumps({"status_code": 200, "blocks": blocks})
+            elif op == GET_BLOCK_BY_HASH_OP or op == GET_BLOCKS_BY_TIMESTAMP_OP:
+                response = self.__handle_get_query(client_socket, op)            
 
             elif op == GET_STATS_OP:
-                self.stats_reader_queue.put(True)
-                stats = self.stats_reader_result_queue.get()
-                response = json.dumps({"status_code": 200, "result": stats})
+                response = self.__handle_stats_query()
 
             else:
-                response = json.dumps({"status_code": 404, "message": "Not Found"})
+                response = self.__handle_unknown_query()
 
             logging.info(f"[API_HANDLER] Sending response to client: {response}")
             client_socket.send_data(response)
+        
         except OSError:
             logging.info(f"[API_HANDLER] Error while reading socket {client_socket}")
+
         finally:
             client_socket.close()
+
+    def __handle_add_chunk(self, client_socket):
+        chunk = client_socket.recv_data()
+        if self.chunk_queue.qsize() == self.limit_chunk:
+            return json.dumps({"status_code": 503, "message": "The system is overloaded at the moment. Try again later"})
+        self.chunk_queue.put(chunk)
+        return json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
+
+    def __handle_get_query(self, client_socket, op):
+        parameter_received = client_socket.recv_data()
+        logging.info(f"[API_HANDLER] Parameter received: {parameter_received}")
+
+        query_socket = Socket()
+        query_socket.connect(self.query_host, self.query_port)
+
+        query_socket.send_data(op)
+        query_socket.recv_data() #ack
+        query_socket.send_data(parameter_received)
+
+        block = query_socket.recv_data()
+
+        query_socket.close()
+
+        return json.dumps({"status_code": 200, "block": block})
+    
+    def __handle_stats_query(self):
+        self.stats_reader_queue.put(True)
+        stats = self.stats_reader_result_queue.get()
+        return json.dumps({"status_code": 200, "result": stats})
+
+    def __handle_unknown_query(self):
+        return json.dumps({"status_code": 404, "message": "Not Found"})

@@ -1,11 +1,11 @@
-import socket
 import json
 import logging
-from sockets.socket import Socket
 from threading import Thread
+from queue import Queue
+
+from sockets.socket import Socket
 from blockchain_reader import BlockchainReader
 from common.utils import *
-from queue import Queue
 
 class QueryManager:
     """Class that handles the querys and forwards them to the blockchain readers"""
@@ -17,27 +17,27 @@ class QueryManager:
         self.request_queue = Queue()
         self.result_queue = Queue()
         self.blockchain_readers = [BlockchainReader(self.request_queue, self.result_queue) for _ in range(n_readers)]
-        self.receiver_results = Thread(target=self.receive_results)
+        self.receiver_results = Thread(target=self.__receive_results)
 
-        self.start_threads()
-
-    def start_threads(self):
-        self.receiver_results.start()
-        for i in range(self.n_readers):
-            self.blockchain_readers[i].start()
-    
-    def receive_results(self):
-        while True:
-            result = self.result_queue.get()
-            client_socket = result["socket"]
-            client_socket.send_data(json.dumps(result["result"]))
-            client_socket.close()
+        self.__start_threads()
                 
     def receive_queries(self):
         while True:
             client_socket = self.socket.accept_new_connection()
             self.__handle_query_connection(client_socket)
+
+    def __start_threads(self):
+        self.receiver_results.start()
+        for i in range(self.n_readers):
+            self.blockchain_readers[i].start()
     
+    def __receive_results(self):
+        while True:
+            result = self.result_queue.get()
+            client_socket = result["socket"]
+            client_socket.send_data(json.dumps(result["result"]))
+            client_socket.close()   
+            
     def __handle_query_connection(self, client_socket):
         """
         Read message from a specific miner socket and closes the socket

@@ -1,11 +1,11 @@
-import socket
 import json
 import logging
 from time import sleep
+from threading import Thread
+
 from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
 from blockchain_writer import BlockchainWriter
-from threading import Thread
 from sockets.socket import Socket
 
 class BlockchainManager(Thread):

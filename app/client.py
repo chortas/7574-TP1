@@ -23,13 +23,13 @@ def main():
     # test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    # test_get_block_by_known_hash("231733126069079101980512047726656037678011962036278724122855706704375600969")
+    test_get_block_by_known_hash("50466779778516501352908841980653484959556510062583205697470303835434776608808")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
     # test_get_blocks_by_unknown_timestamp()
 
     # Test 7 -> Si se pide un bloque con un timestamp conocido <reemplazar en demo> devuelve el correspondiente
-    # test_get_blocks_by_known_timestamp("2021-05-20 23:06")
+    test_get_blocks_by_known_timestamp("2021-05-21 00:53")
 
     # Test 8 -> Si se piden las stats se dan las correctas
     # test_get_stats()

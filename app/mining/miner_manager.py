@@ -1,12 +1,10 @@
+import logging
 from queue import Queue
-from miner import Miner
 from threading import Thread
+
+from miner import Miner
 from difficulty_adjuster import DifficultyAdjuster
 from stats.stats_writer import StatsWriter
-
-import time
-import logging
-from random import shuffle
 
 class MinerManager(Thread):
     """Class that communicates with the miners in order to mine blocks"""

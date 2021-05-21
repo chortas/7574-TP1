@@ -1,12 +1,10 @@
-import datetime
 from threading import Thread
-import socket
 import json
 import logging
+
 from common.cryptographic_solver import CryptographicSolver
 from sockets.socket import Socket
 from common.utils import *
-from stats.stats_writer import StatsWriter
 
 class Miner(Thread):
     """Class that mines a block"""
@@ -58,16 +56,22 @@ class Miner(Thread):
 
                 # write result in result_queue
                 if result["result"] == "OK":
-                    logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
-                    logging.info(f"[MINER] Result from blockchain: {result}")
-                    self.result_queue.put((True, self.id))
-                    hash_obtained = result["hash"]
-                    self.prev_hash_queue.put(hash_obtained)
-                    self.stats_writer.add_stat(self.id, True)
+                    self.__handle_ok_result(result["hash"])
                 else:
-                    logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
-                    self.ack_stop_queue.put(True)
-                    self.result_queue.put((False, self.id))
-                    self.stats_writer.add_stat(self.id, False)
+                    self.__handle_failed_result()
 
                 miner_socket.close()
+
+    def __handle_ok_result(self, hash_obtained):
+        logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
+        logging.info(f"[MINER] Result from blockchain: {hash_obtained}")
+        self.result_queue.put((True, self.id))
+        self.prev_hash_queue.put(hash_obtained)
+        self.stats_writer.add_stat(self.id, True)
+
+    def __handle_failed_result(self):
+        logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
+        self.ack_stop_queue.put(True)
+        self.result_queue.put((False, self.id))
+        self.stats_writer.add_stat(self.id, False)
+        
