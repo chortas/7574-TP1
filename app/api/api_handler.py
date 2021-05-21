@@ -5,6 +5,7 @@ from threading import Thread
 from sockets.socket import Socket
 from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
+from common.utils import *
 from queue import Queue
 
 class ApiHandler:
@@ -54,7 +55,7 @@ class ApiHandler:
 
             response = None
 
-            if op == "POST":
+            if op == ADD_CHUNK_CODE_OP:
                 chunk = client_socket.recv_data()
                 if self.chunk_queue.qsize() == self.limit_chunk:
                     response = json.dumps({"status_code": 503, "message": "The system is overloaded at the moment. Try again later"})
@@ -62,7 +63,7 @@ class ApiHandler:
                     self.chunk_queue.put(chunk)
                     response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
 
-            elif op == "GETH":
+            elif op == GET_BLOCK_BY_HASH_OP:
                 hash_received = client_socket.recv_data()
                 logging.info(f"[API_HANDLER] Hash received: {hash_received}")
 
@@ -83,7 +84,7 @@ class ApiHandler:
 
                 response = json.dumps({"status_code": 200, "block": block})
             
-            elif op == "GETT":
+            elif op == GET_BLOCKS_BY_TIMESTAMP_OP:
                 timestamp_received = client_socket.recv_data()
                 logging.info(f"[API_HANDLER] Timestamp received: {timestamp_received}")
 
@@ -100,7 +101,7 @@ class ApiHandler:
 
                 response = json.dumps({"status_code": 200, "blocks": blocks})
 
-            elif op == "STAT":
+            elif op == GET_STATS_OP:
                 self.stats_reader_queue.put(True)
                 stats = self.stats_reader_result_queue.get()
                 response = json.dumps({"status_code": 200, "result": stats})

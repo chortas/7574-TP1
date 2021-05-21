@@ -3,6 +3,7 @@ import logging
 from time import sleep
 from threading import Thread
 from sockets.socket import Socket
+from common.utils import *
 
 API_PORT = 8080 
 API_HOST = "127.0.0.1"
@@ -104,27 +105,27 @@ def test_difficulty():
         test_add_chunks_until_limit()
 
 def get_stats(client_socket):
-    operation = "STAT"
+    operation = GET_STATS_OP
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     return client_socket.recv_data()
 
 def get_chunks_by_minute(client_socket, timestamp):
-    operation = "GETT"
+    operation = GET_BLOCKS_BY_TIMESTAMP_OP
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     client_socket.send_data(timestamp)
     return client_socket.recv_data()
 
 def get_chunk(client_socket, hash_value):
-    operation = "GETH"
+    operation = GET_BLOCK_BY_HASH_OP
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     client_socket.send_data(hash_value)
     return client_socket.recv_data()
 
 def add_chunk(client_socket, chunk):
-    operation = "POST"
+    operation = ADD_CHUNK_CODE_OP
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     client_socket.send_data(chunk)

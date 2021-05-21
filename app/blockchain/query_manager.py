@@ -4,6 +4,7 @@ import logging
 from sockets.socket import Socket
 from threading import Thread
 from blockchain_reader import BlockchainReader
+from common.utils import *
 from queue import Queue
 
 class QueryManager:
@@ -48,11 +49,11 @@ class QueryManager:
 
             client_socket.send_data(json.dumps({"ack": True})) #ack
 
-            if op == "GETH":
+            if op == GET_BLOCK_BY_HASH_OP:
                 hash_received = client_socket.recv_data()
                 self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
-            elif op == "GETT":
+            elif op == GET_BLOCKS_BY_TIMESTAMP_OP:
                 timestamp_received = client_socket.recv_data()
                 self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 
