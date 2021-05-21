@@ -1,5 +1,5 @@
 import logging
-from queue import Queue
+from multiprocessing import Queue
 from threading import Thread
 
 from miner import Miner

@@ -1,4 +1,4 @@
-from threading import Thread
+from multiprocessing import Process
 import json
 import logging
 
@@ -6,12 +6,12 @@ from common.cryptographic_solver import CryptographicSolver
 from sockets.socket import Socket
 from common.utils import *
 
-class Miner(Thread):
+class Miner(Process):
     """Class that mines a block"""
 
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
     blockchain_host, blockchain_port, stats_writer, ack_stop_queue):
-        Thread.__init__(self)
+        Process.__init__(self)
         self.cryptographic_solver = CryptographicSolver()
         self.block_queue = block_queue
         self.stop_queue = stop_queue
