@@ -21,7 +21,7 @@ class BlockchainReader(Thread):
             operation = request["operation"]
             logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
             
-            if operation == "GET BLOCK":
+            if operation == "GETH":
                 hash_received = request["hash"]
                 client_socket = request["socket"]
                 block = self.get_block(hash_received)

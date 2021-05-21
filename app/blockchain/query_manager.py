@@ -48,11 +48,11 @@ class QueryManager:
 
             client_socket.send_data(json.dumps({"ack": True})) #ack
 
-            if op == "GET BLOCK":
+            if op == "GETH":
                 hash_received = client_socket.recv_data()
                 self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
-            elif op == "GET BLOCKS BY MINUTE":
+            elif op == "GETT":
                 timestamp_received = client_socket.recv_data()
                 self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 

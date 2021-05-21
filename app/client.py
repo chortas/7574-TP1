@@ -10,8 +10,7 @@ API_HOST = "127.0.0.1"
 def main():
     
     # Test 1 -> Guardar 256 chunks consiste en guardar 1 bloque
-    # for i in range(4):
-    #    test_add_chunks_until_limit()
+    # test_add_chunks_until_limit()
 
     # Test 2 -> Si hay <256 chunks, después de cierto timeout configurable se manda
     # test_chunk_is_sent_if_timeout()
@@ -32,13 +31,13 @@ def main():
     # test_get_blocks_by_known_timestamp("2021-05-20 23:06")
 
     # Test 8 -> Si se piden las stats se dan las correctas
-    test_get_stats()
+    # test_get_stats()
 
     # Test 9 -> Si se agregan más de 256 bloques se ajusta la dificultad
     # test_difficulty()
 
     # Test 10 -> Abro más clientes
-    # test_many_clients()
+    test_many_clients()
 
 def test_many_clients():
     for i in range(256):
@@ -105,27 +104,27 @@ def test_difficulty():
         test_add_chunks_until_limit()
 
 def get_stats(client_socket):
-    operation = "GET STATS"
+    operation = "STAT"
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     return client_socket.recv_data()
 
 def get_chunks_by_minute(client_socket, timestamp):
-    operation = "GET BLOCKS BY MINUTE"
+    operation = "GETT"
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     client_socket.send_data(timestamp)
     return client_socket.recv_data()
 
 def get_chunk(client_socket, hash_value):
-    operation = "GET BLOCK"
+    operation = "GETH"
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     client_socket.send_data(hash_value)
     return client_socket.recv_data()
 
 def add_chunk(client_socket, chunk):
-    operation = "ADD CHUNK"
+    operation = "POST"
     client_socket.send_data(operation)
     client_socket.recv_data() #ack
     client_socket.send_data(chunk)

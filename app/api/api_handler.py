@@ -54,7 +54,7 @@ class ApiHandler:
 
             response = None
 
-            if op == "ADD CHUNK":
+            if op == "POST":
                 chunk = client_socket.recv_data()
                 if self.chunk_queue.qsize() == self.limit_chunk:
                     response = json.dumps({"status_code": 503, "message": "The system is overloaded at the moment. Try again later"})
@@ -62,7 +62,7 @@ class ApiHandler:
                     self.chunk_queue.put(chunk)
                     response = json.dumps({"status_code": 200, "message": "The chunk will be processed shortly"})  
 
-            elif op == "GET BLOCK":
+            elif op == "GETH":
                 hash_received = client_socket.recv_data()
                 logging.info(f"[API_HANDLER] Hash received: {hash_received}")
 
@@ -83,7 +83,7 @@ class ApiHandler:
 
                 response = json.dumps({"status_code": 200, "block": block})
             
-            elif op == "GET BLOCKS BY MINUTE":
+            elif op == "GETT":
                 timestamp_received = client_socket.recv_data()
                 logging.info(f"[API_HANDLER] Timestamp received: {timestamp_received}")
 
@@ -100,7 +100,7 @@ class ApiHandler:
 
                 response = json.dumps({"status_code": 200, "blocks": blocks})
 
-            elif op == "GET STATS":
+            elif op == "STAT":
                 self.stats_reader_queue.put(True)
                 stats = self.stats_reader_result_queue.get()
                 response = json.dumps({"status_code": 200, "result": stats})
