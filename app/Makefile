@@ -25,7 +25,7 @@ docker-image:
 .PHONY: docker-image
 
 docker-compose-up: docker-image
-	docker-compose -f docker-compose.yml up -d --build
+	docker-compose -f docker-compose.yml up --build
 .PHONY: docker-compose-up
 
 docker-compose-down:
@@ -48,5 +48,4 @@ demo:
 restart:
 	make docker-compose-down
 	make docker-compose-up
-	make docker-compose-logs
 .PHONY: restart

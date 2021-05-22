@@ -7,6 +7,7 @@ ADD_CHUNK_CODE_OP = "POST"
 GET_BLOCK_BY_HASH_OP = "GETH"
 GET_BLOCKS_BY_TIMESTAMP_OP = "GETT"
 GET_STATS_OP = "STAT"
+OPERATION_TIMEOUT = 30
 
 def get_and_format_datetime_now():
     return datetime.now().strftime(FULL_DATE_FORMAT)
@@ -23,3 +24,7 @@ def bytes_4_to_number(b):
     for i in range(4):
         res += b[i] << (i*8)
     return res
+
+def empty_queue(queue):
+    while not queue.empty():
+        queue.get()

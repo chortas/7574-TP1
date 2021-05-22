@@ -1,16 +1,18 @@
 import json
 import logging
 from threading import Thread
-from queue import Queue
+from queue import Queue, Empty
 
 from sockets.socket import Socket
 from blockchain_reader import BlockchainReader
 from common.utils import *
 
-class QueryManager:
+class QueryManager(Thread):
     """Class that handles the querys and forwards them to the blockchain readers"""
 
-    def __init__(self, socket_host, socket_port, listen_backlog, n_readers, block_index_lock, block_lock):
+    def __init__(self, socket_host, socket_port, listen_backlog, n_readers, block_index_lock, 
+    block_lock, graceful_stopper):
+        Thread.__init__(self)
         self.socket = Socket()
         self.socket.bind_and_listen(socket_host, socket_port, listen_backlog)
         self.n_readers = n_readers
@@ -18,13 +20,17 @@ class QueryManager:
         self.result_queue = Queue()
         self.blockchain_readers = [BlockchainReader(self.request_queue, self.result_queue, block_index_lock, block_lock) for _ in range(n_readers)]
         self.receiver_results = Thread(target=self.__receive_results)
-
-        self.__start_threads()
+        self.graceful_stopper = graceful_stopper
                 
-    def receive_queries(self):
-        while True:
-            client_socket = self.socket.accept_new_connection()
-            self.__handle_query_connection(client_socket)
+    def run(self):
+        self.__start_threads()
+        while not self.graceful_stopper.has_been_stopped():
+            try:
+                client_socket = self.socket.accept_new_connection()
+                self.__handle_query_connection(client_socket)
+            except OSError:
+                self.__stop()
+        logging.info("[QUERY_MANAGER] End run")
             
     def __start_threads(self):
         self.receiver_results.start()
@@ -32,12 +38,23 @@ class QueryManager:
             self.blockchain_readers[i].start()
     
     def __receive_results(self):
-        while True:
-            result = self.result_queue.get()
-            client_socket = result["socket"]
-            client_socket.send_data(json.dumps(result["result"]))
-            client_socket.close()   
-            
+        while not self.graceful_stopper.has_been_stopped():
+            try:
+                result = self.result_queue.get(timeout=OPERATION_TIMEOUT)
+                client_socket = result["socket"]
+                client_socket.send_data(json.dumps(result["result"]))
+                client_socket.close()   
+            except Empty:
+                self.__stop()
+        logging.info("[QUERY_MANAGER] End receive_results")
+
+    def __stop(self):
+        self.graceful_stopper.exit_gracefully()
+        empty_queue(self.request_queue)
+        empty_queue(self.result_queue)
+        for i in range(self.n_readers):
+            self.blockchain_readers[i].stop()
+
     def __handle_query_connection(self, client_socket):
         """
         Read message from a specific miner socket and closes the socket

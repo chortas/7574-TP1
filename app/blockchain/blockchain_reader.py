@@ -3,6 +3,7 @@ import os
 import logging
 from datetime import datetime, timedelta
 from threading import Thread
+from queue import Empty
 
 from common.block import Block
 from common.utils import *
@@ -17,26 +18,39 @@ class BlockchainReader(Thread):
         self.result_queue = result_queue
         self.block_index_lock = block_index_lock
         self.block_lock = block_lock
+        self.should_stop = False
 
     def run(self):
-        while True:
-            request = self.request_queue.get()
-            operation = request["operation"]
-            logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
+        while not self.should_stop:
+            try:
+                request = self.request_queue.get(timeout=OPERATION_TIMEOUT)
+                self.__handle_request(request)
+            except Empty:
+                self.stop()
+        logging.info("[BLOCKCHAIN_READER] End run")
+        
+    def stop(self):
+        self.should_stop = True
+        empty_queue(self.result_queue)
+        empty_queue(self.request_queue)
+
+    def __handle_request(self, request):
+        operation = request["operation"]
+        logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
             
-            if operation == GET_BLOCK_BY_HASH_OP:
-                hash_received = request["hash"]
-                client_socket = request["socket"]
-                block = self.__get_block_safe(hash_received)
-                serialized_block = block.serialize_into_dict() if block != None else {}
-                self.result_queue.put({"socket": client_socket, "result": serialized_block})
-            else:
-                first_endpoint = request["timestamp"]
-                client_socket = request["socket"]
-                blocks = self.__get_blocks_between_minute_interval_safe(first_endpoint)
-                serialized_blocks = [block.serialize_into_dict() for block in blocks]
-                self.result_queue.put({"socket": client_socket, "result": serialized_blocks})
-      
+        if operation == GET_BLOCK_BY_HASH_OP:
+            hash_received = request["hash"]
+            client_socket = request["socket"]
+            block = self.__get_block_safe(hash_received)
+            serialized_block = block.serialize_into_dict() if block != None else {}
+            self.result_queue.put({"socket": client_socket, "result": serialized_block})
+        else:
+            first_endpoint = request["timestamp"]
+            client_socket = request["socket"]
+            blocks = self.__get_blocks_between_minute_interval_safe(first_endpoint)
+            serialized_blocks = [block.serialize_into_dict() for block in blocks]
+            self.result_queue.put({"socket": client_socket, "result": serialized_blocks})
+
     def __get_block_safe(self, block_hash):
         self.block_lock.acquire()
         try:
@@ -100,4 +114,4 @@ class BlockchainReader(Thread):
                     blocks.append(self.__get_block(block_hash))
 
         return blocks
-        
+    

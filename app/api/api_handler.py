@@ -16,27 +16,17 @@ class ApiHandler():
     timeout_chunk, limit_chunk, n_clients, stats):
         self.socket = Socket()
         self.socket.bind_and_listen('', socket_port, listen_backlog)
-
         self.miner_manager = miner_manager
-
         self.limit_chunk = limit_chunk
         self.chunk_queue = Queue()
         self.block_queue = miner_manager.get_block_queue()
         self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue, timeout_chunk)
-
         self.stats = stats
-
-        #self.stats_reader_queue = Queue()
-        #self.stats_reader_result_queue = Queue()
-        #self.stats_reader = StatsReader(self.stats_reader_queue, self.stats_reader_result_queue)
-
         self.query_host = query_host
         self.query_port = query_port
-
         self.runners = [Thread(target=self.run) for i in range(n_clients)]
 
     def start_readers(self):
-        #self.stats_reader.start()
         self.block_builder.start()
         self.miner_manager.start()
         for runner in self.runners:
@@ -44,10 +34,11 @@ class ApiHandler():
 
     def run(self):
         while True:
-            client_socket = self.socket.accept_new_connection()
-            if not client_socket:
-                break
-            self.__handle_client_connection(client_socket)
+            try:
+                client_socket = self.socket.accept_new_connection()
+                self.__handle_client_connection(client_socket)
+            except OSError:
+                logging.info("[API_HANDLER] Socket timeout")
     
     def __handle_client_connection(self, client_socket):
         try:
@@ -103,8 +94,6 @@ class ApiHandler():
     
     def __handle_stats_query(self):
         stats = self.stats.read_stats()
-        #self.stats_reader_queue.put(True)
-        #stats = self.stats_reader_result_queue.get()
         return json.dumps({"status_code": 200, "result": stats})
 
     def __handle_unknown_query(self):

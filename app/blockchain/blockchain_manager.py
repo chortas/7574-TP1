@@ -1,6 +1,5 @@
 import json
 import logging
-from time import sleep
 from threading import Thread
 
 from common.block import Block
@@ -11,18 +10,23 @@ class BlockchainManager(Thread):
     """Class that receives the bloks procesed by the miners and adds them to the blockchain
     if corresponds""" 
 
-    def __init__(self, socket_host, socket_port, listen_backlog, blockchain_writer):
+    def __init__(self, socket_host, socket_port, listen_backlog, blockchain_writer, graceful_stopper):
         Thread.__init__(self)
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
         self.blockchain_writer = blockchain_writer
         self.socket = Socket()
         self.socket.bind_and_listen(socket_host, socket_port, listen_backlog)
+        self.graceful_stopper = graceful_stopper
 
     def run(self):
-        while True:
-            miner_socket = self.socket.accept_new_connection()
-            self.__handle_miner_connection(miner_socket)
+        while not self.graceful_stopper.has_been_stopped():
+            try:
+                miner_socket = self.socket.accept_new_connection()
+                self.__handle_miner_connection(miner_socket)
+            except OSError:
+                self.graceful_stopper.exit_gracefully()
+        logging.info("[BLOCKCHAIN_MANAGER] End run")
 
     def __handle_miner_connection(self, miner_socket):
         try:

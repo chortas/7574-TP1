@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import logging
 import os
+import time
 from threading import Lock
 
 from blockchain_manager import BlockchainManager
 from blockchain_writer import BlockchainWriter
 from query_manager import QueryManager
+from common.graceful_stopper import GracefulStopper
 
 def parse_config_params():
     config_params = {}
@@ -53,11 +55,16 @@ def main():
     block_index_lock = Lock()
     block_lock = Lock()
 
-    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners, BlockchainWriter(block_index_lock, block_lock))
-    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers, block_index_lock, block_lock)
+    graceful_stopper = GracefulStopper()
+    blockchain_writer = BlockchainWriter(block_index_lock, block_lock)
+
+    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners, 
+    blockchain_writer, graceful_stopper)
+    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers, 
+    block_index_lock, block_lock, graceful_stopper)
 
     blockchain_manager.start()
-    query_manager.receive_queries()
+    query_manager.start()
 
 def initialize_log():
     """
