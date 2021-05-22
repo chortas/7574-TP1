@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import logging
 import os
+from threading import Lock
 
 from blockchain_manager import BlockchainManager
+from blockchain_writer import BlockchainWriter
 from query_manager import QueryManager
 
 def parse_config_params():
@@ -48,8 +50,10 @@ def main():
 
     n_readers = config_params["n_readers"]
 
-    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners)
-    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers)
+    block_index_lock = Lock()
+
+    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners, BlockchainWriter(block_index_lock))
+    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers, block_index_lock)
 
     blockchain_manager.start()
     query_manager.receive_queries()

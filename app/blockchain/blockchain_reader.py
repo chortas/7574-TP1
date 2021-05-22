@@ -11,10 +11,11 @@ class BlockchainReader(Thread):
     """Class that manages the readings from the blockchain, specially obtaining a
     block given a hash and blocks given a period of time of 1 minute"""
 
-    def __init__(self, request_queue, result_queue):
+    def __init__(self, request_queue, result_queue, block_index_lock):
         Thread.__init__(self)
         self.request_queue = request_queue
         self.result_queue = result_queue
+        self.block_index_lock = block_index_lock
 
     def run(self):
         while True:
@@ -31,7 +32,7 @@ class BlockchainReader(Thread):
             else:
                 first_endpoint = request["timestamp"]
                 client_socket = request["socket"]
-                blocks = self.__get_blocks_between_minute_interval(first_endpoint)
+                blocks = self.__get_blocks_between_minute_interval_safe(first_endpoint)
                 serialized_blocks = [block.serialize_into_dict() for block in blocks]
                 self.result_queue.put({"socket": client_socket, "result": serialized_blocks})
       
@@ -58,6 +59,13 @@ class BlockchainReader(Thread):
                 entries = row['entries'].split('-')
 
         return Block(entries, header)
+
+    def __get_blocks_between_minute_interval_safe(self, first_endpoint):
+        self.block_index_lock.acquire()
+        try:
+            return self.__get_blocks_between_minute_interval(first_endpoint)
+        finally:
+            self.block_index_lock.release()
 
     def __get_blocks_between_minute_interval(self, first_endpoint):
         try:

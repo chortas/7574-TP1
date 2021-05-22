@@ -13,8 +13,6 @@ def main():
     # Test 1 -> Guardar 256 chunks consiste en guardar 1 bloque
     test_add_chunks_until_limit()
 
-    sleep(2)
-
     # Test 2 -> Si hay <256 chunks, después de cierto timeout configurable se manda
     # test_chunk_is_sent_if_timeout()
 
@@ -25,13 +23,13 @@ def main():
     # test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    # test_get_block_by_known_hash("91470761962199946417132762827579287019889068241650905763377399187192114185011")
+    test_get_block_by_known_hash("83041010066415798844909956045739242508780415263605433033048036516444951504375")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
     # test_get_blocks_by_unknown_timestamp()
 
     # Test 7 -> Si se pide un bloque con un timestamp conocido <reemplazar en demo> devuelve el correspondiente
-    # test_get_blocks_by_known_timestamp("2021-05-21 00:53")
+    test_get_blocks_by_known_timestamp("2021-05-22 16:35")
 
     # Test 8 -> Si se piden las stats se dan las correctas
     test_get_stats()

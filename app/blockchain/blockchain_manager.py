@@ -5,18 +5,17 @@ from threading import Thread
 
 from common.block import Block
 from common.cryptographic_solver import CryptographicSolver
-from blockchain_writer import BlockchainWriter
 from sockets.socket import Socket
 
 class BlockchainManager(Thread):
     """Class that receives the bloks procesed by the miners and adds them to the blockchain
     if corresponds""" 
 
-    def __init__(self, socket_host, socket_port, listen_backlog):
+    def __init__(self, socket_host, socket_port, listen_backlog, blockchain_writer):
         Thread.__init__(self)
         self.last_block_hash = 0
         self.cryptographic_solver = CryptographicSolver()
-        self.blockchain_writer = BlockchainWriter()
+        self.blockchain_writer = blockchain_writer
         self.socket = Socket()
         self.socket.bind_and_listen(socket_host, socket_port, listen_backlog)
 
@@ -31,7 +30,6 @@ class BlockchainManager(Thread):
             block = Block.deserialize(block_serialized)
             result = {}
             if self.__add_block(block):
-                sleep(3)
                 logging.info(f"[BLOCKCHAIN_MANAGER] Block added: {block}")
                 result = json.dumps({"hash": block.hash(), "result": "OK"})
             else:
