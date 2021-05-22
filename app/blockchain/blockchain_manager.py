@@ -41,7 +41,9 @@ class BlockchainManager(Thread):
             miner_socket.send_data(result)
 
         except OSError:
-            logging.info(f"[BLOCKCHAIN_MANAGER] Error while reading socket {miner_socket}")
+            logging.info(f"[BLOCKCHAIN_MANAGER] Error while reading socket")
+            self.graceful_stopper.exit_gracefully()
+
         finally:
             miner_socket.close()
 

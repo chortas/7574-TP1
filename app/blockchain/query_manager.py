@@ -44,7 +44,7 @@ class QueryManager(Thread):
                 client_socket = result["socket"]
                 client_socket.send_data(json.dumps(result["result"]))
                 client_socket.close()   
-            except Empty:
+            except (Empty, OSError):
                 self.__stop()
         logging.info("[QUERY_MANAGER] End receive_results")
 
@@ -75,4 +75,5 @@ class QueryManager(Thread):
                 self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
 
         except OSError:
-            logging.info(f"[QUERY_MANAGER] Error while reading socket {client_socket}")
+            logging.info(f"[QUERY_MANAGER] Error while reading socket")
+            self.__stop()

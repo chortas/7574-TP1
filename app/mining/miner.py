@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from queue import Empty
 import json
 import logging
 
@@ -21,8 +22,47 @@ class Miner(Process):
         self.blockchain_port = blockchain_port
         self.stats = stats
         self.ack_stop_queue = ack_stop_queue
+        self.should_stop = False
 
-    def mine(self, block):
+    def stop(self):
+        self.should_stop = True
+        empty_queue(self.block_queue)
+        empty_queue(self.stop_queue)
+        empty_queue(self.result_queue)
+        empty_queue(self.ack_stop_queue)
+
+    def run(self):
+        while not self.should_stop:
+            try:
+                block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
+                self.__mine_block_and_handle_result(block)     
+            except (Empty, OSError):
+                self.stop()
+        logging.info("[MINER] End run")
+
+    def __mine_block_and_handle_result(self, block):
+        is_mine_ok = self.__mine(block)
+        if not is_mine_ok:
+            return
+        miner_socket = Socket()
+        miner_socket.connect(self.blockchain_host, self.blockchain_port)
+        block_serialized = block.serialize()
+                
+        # send block to blockchain
+        miner_socket.send_data(block_serialized)
+
+        # receive result
+        result = json.loads(miner_socket.recv_data())
+
+        # write result in result_queue
+        if result["result"] == "OK":
+            self.__handle_ok_result(result["hash"])
+        else:
+            self.__handle_failed_result()
+
+        miner_socket.close()
+
+    def __mine(self, block):
         block.set_timestamp(get_and_format_datetime_now())
         while not self.cryptographic_solver.solve(block, block.hash()) and self.stop_queue.empty():
             block.add_nonce()
@@ -37,29 +77,6 @@ class Miner(Process):
             return False
         
         return True
-
-    def run(self):
-        while True:
-            block = self.block_queue.get()
-            is_mine_ok = self.mine(block)
-            if is_mine_ok:
-                miner_socket = Socket()
-                miner_socket.connect(self.blockchain_host, self.blockchain_port)
-                block_serialized = block.serialize()
-                
-                # send block to blockchain
-                miner_socket.send_data(block_serialized)
-
-                # receive result
-                result = json.loads(miner_socket.recv_data())
-
-                # write result in result_queue
-                if result["result"] == "OK":
-                    self.__handle_ok_result(result["hash"])
-                else:
-                    self.__handle_failed_result()
-
-                miner_socket.close()
 
     def __handle_ok_result(self, hash_obtained):
         logging.info(f"[MINER] I'm the miner {self.id} and I could mine")

@@ -10,7 +10,7 @@ class Socket:
             self.socket = socket_built
         else:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(30) #TODO: change this
+        self.socket.settimeout(OPERATION_TIMEOUT)
 
     def connect(self, host, port):
         self.socket.connect((host, port))

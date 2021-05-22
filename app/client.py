@@ -20,16 +20,16 @@ def main():
     # test_add_chunks_past_limit()
 
     # Test 4 -> Si se pide un bloque con un hash desconocido devuelve vacio
-    # test_get_block_by_unknown_hash()
+    test_get_block_by_unknown_hash()
 
     # Test 5 -> Si se pide un bloque con un hash conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_block_by_known_hash("83041010066415798844909956045739242508780415263605433033048036516444951504375")
+    test_get_block_by_known_hash("45582065247697150757975488647048803023041546605744526524953349031944712715292")
     
     # Test 6 -> Si se pide un bloque con un timestamp desconocido devuelve vacio
-    # test_get_blocks_by_unknown_timestamp()
+    test_get_blocks_by_unknown_timestamp()
 
     # Test 7 -> Si se pide un bloque con un timestamp conocido <reemplazar en demo> devuelve el correspondiente
-    test_get_blocks_by_known_timestamp("2021-05-22 16:35")
+    test_get_blocks_by_known_timestamp("2021-05-22 21:20")
 
     # Test 8 -> Si se piden las stats se dan las correctas
     test_get_stats()
@@ -41,7 +41,7 @@ def main():
     # test_many_clients()
 
 def test_many_clients():
-    for i in range(256):
+    for i in range(10):
         client_socket = Socket()
         client_socket.connect(API_HOST, API_PORT)
         client = Thread(target=add_chunk, args=(client_socket,str(i)))

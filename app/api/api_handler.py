@@ -12,33 +12,39 @@ class ApiHandler():
     """Class that comunicates with the client and forwards the request to the corresponding
     entities"""
 
-    def __init__(self, socket_port, listen_backlog, miner_manager, query_host, query_port, 
-    timeout_chunk, limit_chunk, n_clients, stats):
+    def __init__(self, socket_port, listen_backlog, block_queue, query_host, query_port, 
+    timeout_chunk, limit_chunk, n_clients, stats, graceful_stopper):
         self.socket = Socket()
         self.socket.bind_and_listen('', socket_port, listen_backlog)
-        self.miner_manager = miner_manager
         self.limit_chunk = limit_chunk
         self.chunk_queue = Queue()
-        self.block_queue = miner_manager.get_block_queue()
+        self.block_queue = block_queue
         self.block_builder = BlockBuilder(self.chunk_queue, self.block_queue, timeout_chunk)
         self.stats = stats
         self.query_host = query_host
         self.query_port = query_port
         self.runners = [Thread(target=self.run) for i in range(n_clients)]
+        self.graceful_stopper = graceful_stopper
 
-    def start_readers(self):
+    def start(self):
         self.block_builder.start()
-        self.miner_manager.start()
         for runner in self.runners:
-            runner.start()
+            runner.start() 
 
     def run(self):
-        while True:
+        while not self.graceful_stopper.has_been_stopped():
             try:
                 client_socket = self.socket.accept_new_connection()
                 self.__handle_client_connection(client_socket)
             except OSError:
-                logging.info("[API_HANDLER] Socket timeout")
+                self.__stop()
+        logging.info("[API_HANDLER] End run")
+
+    def __stop(self):
+        self.graceful_stopper.exit_gracefully()
+        empty_queue(self.chunk_queue)
+        empty_queue(self.block_queue)
+        self.block_builder.stop()
     
     def __handle_client_connection(self, client_socket):
         try:
@@ -63,7 +69,8 @@ class ApiHandler():
             client_socket.send_data(response)
         
         except OSError:
-            logging.info(f"[API_HANDLER] Error while reading socket {client_socket}")
+            logging.info(f"[API_HANDLER] Error while reading socket")
+            self.__stop()
 
         finally:
             client_socket.close()

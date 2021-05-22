@@ -4,11 +4,10 @@ import os
 from queue import Queue
 from multiprocessing import Lock
 
-from common.block import Block
 from miner_manager import MinerManager
-from block_builder import BlockBuilder
 from api.api_handler import ApiHandler
 from stats.stats import Stats
+from common.graceful_stopper import GracefulStopper
 
 def parse_config_params():
     config_params = {}
@@ -57,13 +56,16 @@ def main():
     n_clients = config_params["n_clients"]
 
     stats = Stats(n_miners)
+    block_queue = Queue()
+    graceful_stopper = GracefulStopper()
 
-    miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port, Queue(), stats)
-    
-    api_handler = ApiHandler(api_port, api_listeners, miner_manager, query_host, query_port, 
-    timeout_chunk, limit_chunk, n_clients, stats)
+    miner_manager = MinerManager(n_miners, blockchain_host, blockchain_port, block_queue, stats, 
+    graceful_stopper)
+    api_handler = ApiHandler(api_port, api_listeners, block_queue, query_host, query_port, 
+    timeout_chunk, limit_chunk, n_clients, stats, graceful_stopper)
 
-    api_handler.start_readers()
+    miner_manager.start()
+    api_handler.start()
     
 def initialize_log():
     """

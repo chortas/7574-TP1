@@ -1,15 +1,16 @@
 import logging
 from multiprocessing import Queue
+from queue import Empty
 from threading import Thread
 
 from miner import Miner
 from difficulty_adjuster import DifficultyAdjuster
-from stats.stats_writer import StatsWriter
+from common.utils import *
 
 class MinerManager(Thread):
     """Class that communicates with the miners in order to mine blocks"""
 
-    def __init__(self, n_miners, blockchain_host, blockchain_port, block_queue, stats):
+    def __init__(self, n_miners, blockchain_host, blockchain_port, block_queue, stats, graceful_stopper):
         Thread.__init__(self)
         self.n_miners = n_miners
         self.miner_block_queues = [Queue() for _ in range(n_miners)]
@@ -22,21 +23,34 @@ class MinerManager(Thread):
         self.prev_hash = 0
         self.difficulty_adjuster = DifficultyAdjuster()
         self.block_queue = block_queue
-
-        self.__start_threads()
-
-    def get_block_queue(self):
-        return self.block_queue
+        self.graceful_stopper = graceful_stopper
         
     def run(self):
-        while True:
-            block = self.block_queue.get()
-            block.set_prev_hash(self.prev_hash)
-            block.set_difficulty(self.difficulty_adjuster.get_difficulty())
-            queues_to_send = self.miner_block_queues[:]
-            for block_queue in queues_to_send:
-                block_queue.put(block)
-            self.__receive_results()
+        self.__start_threads()
+        while not self.graceful_stopper.has_been_stopped():
+            try:
+                block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
+                block.set_prev_hash(self.prev_hash)
+                block.set_difficulty(self.difficulty_adjuster.get_difficulty())
+                queues_to_send = self.miner_block_queues[:]
+                for block_queue in queues_to_send:
+                    block_queue.put(block)
+                self.__receive_results() #TODO: change this
+            except Empty:
+                self.__stop()
+        logging.info("[MINER_MANAGER] End run")
+    
+    def __stop(self):
+        self.graceful_stopper.exit_gracefully()
+        for queue in self.miner_block_queues:
+            empty_queue(queue)
+        for queue in self.stop_queues:
+            empty_queue(queue)
+        empty_queue(self.result_queue)
+        empty_queue(self.ack_stop_queue)
+        empty_queue(self.block_queue)
+        for miner in self.miners:
+            miner.stop()
 
     def __start_threads(self):
         for i in range(self.n_miners):
