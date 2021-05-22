@@ -35,7 +35,7 @@ class MinerManager(Thread):
                 queues_to_send = self.miner_block_queues[:]
                 for block_queue in queues_to_send:
                     block_queue.put(block)
-                self.__receive_results() #TODO: change this
+                self.__receive_results() #block until all results come back from blockchain
             except Empty:
                 self.__stop()
         logging.info("[MINER_MANAGER] End run")
