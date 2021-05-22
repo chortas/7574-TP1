@@ -51,9 +51,10 @@ def main():
     n_readers = config_params["n_readers"]
 
     block_index_lock = Lock()
+    block_lock = Lock()
 
-    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners, BlockchainWriter(block_index_lock))
-    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers, block_index_lock)
+    blockchain_manager = BlockchainManager(blockchain_host, blockchain_port, blockchain_listeners, BlockchainWriter(block_index_lock, block_lock))
+    query_manager = QueryManager(query_host, query_port, query_listeners, n_readers, block_index_lock, block_lock)
 
     blockchain_manager.start()
     query_manager.receive_queries()

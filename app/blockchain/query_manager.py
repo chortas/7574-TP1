@@ -10,13 +10,13 @@ from common.utils import *
 class QueryManager:
     """Class that handles the querys and forwards them to the blockchain readers"""
 
-    def __init__(self, socket_host, socket_port, listen_backlog, n_readers, block_index_lock):
+    def __init__(self, socket_host, socket_port, listen_backlog, n_readers, block_index_lock, block_lock):
         self.socket = Socket()
         self.socket.bind_and_listen(socket_host, socket_port, listen_backlog)
         self.n_readers = n_readers
         self.request_queue = Queue()
         self.result_queue = Queue()
-        self.blockchain_readers = [BlockchainReader(self.request_queue, self.result_queue, block_index_lock) for _ in range(n_readers)]
+        self.blockchain_readers = [BlockchainReader(self.request_queue, self.result_queue, block_index_lock, block_lock) for _ in range(n_readers)]
         self.receiver_results = Thread(target=self.__receive_results)
 
         self.__start_threads()
@@ -25,7 +25,7 @@ class QueryManager:
         while True:
             client_socket = self.socket.accept_new_connection()
             self.__handle_query_connection(client_socket)
-
+            
     def __start_threads(self):
         self.receiver_results.start()
         for i in range(self.n_readers):
