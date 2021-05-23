@@ -35,7 +35,7 @@ class BlockchainManager(Thread):
             result = {}
             if self.__add_block(block):
                 logging.info(f"[BLOCKCHAIN_MANAGER] Block added: {block}")
-                result = json.dumps({"hash": block.hash(), "result": "OK"})
+                result = json.dumps({"hash": block.compute_hash(), "result": "OK"})
             else:
                 result = json.dumps({"result": "FAILED"})
             miner_socket.send_data(result)
@@ -49,11 +49,11 @@ class BlockchainManager(Thread):
 
     def __add_block(self, new_block):
         if (self.__is_block_valid(new_block)):
-            self.last_block_hash = new_block.hash()
+            self.last_block_hash = new_block.compute_hash()
             self.blockchain_writer.write_block(new_block)
             return True
         return False
     
     def __is_block_valid(self, block):
-        return block.get_prev_hash() == self.last_block_hash and self.cryptographic_solver.solve(block, block.get_hash())
+        return block.get_prev_hash() == self.last_block_hash and self.cryptographic_solver.solve(block, block.compute_hash())
     

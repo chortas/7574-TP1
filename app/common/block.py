@@ -10,28 +10,30 @@ MAX_ENTRIES_AMOUNT = 256
 class Block: 
     """Representation of a block"""
     
-    def __init__(self, entries, header={}, hash_received=0):
-        if header != {}:
-            self.header = header
-        else:
-            self.header = {
-                'prev_hash': 0,
-                'nonce': 0,
-                'timestamp': get_and_format_datetime_now(),
-                'entries_amount': len(entries),
-                'difficulty': 1
-            }
+    def __init__(self, entries, prev_hash=0, nonce=0, timestamp=get_and_format_datetime_now(),
+    difficulty=1, hash_received=0):
+
         if (len(entries) > MAX_ENTRIES_AMOUNT):
             raise ValueError("Exceeding chunk size")
-        
+        self.prev_hash = prev_hash
+        self.nonce = nonce
+        self.timestamp = timestamp
+        self.entries_amount = len(entries)
+        self.difficulty = difficulty
         self.entries = entries
-        self.hash_given = hash_received
-        self.hash_calculated = None
+        self.hash_calculated = hash_received
             
-    def hash(self):
+    def compute_hash(self):
         if self.hash_calculated == None:
             logging.info("Calculating hash...")
-            self.hash_calculated = int(sha256(repr(self.header).encode('utf-8') + repr(self.entries).encode('utf-8')).hexdigest(), 16)
+            header = {
+            'prev_hash': self.prev_hash,
+            'nonce': self.nonce,
+            'timestamp': self.timestamp,
+            'entries_amount': self.entries_amount,
+            'difficulty': self.difficulty
+            }
+            self.hash_calculated = int(sha256(repr(header).encode('utf-8') + repr(self.entries).encode('utf-8')).hexdigest(), 16)
         else:
             logging.info("Not calculating hash!")
         return self.hash_calculated
@@ -44,50 +46,43 @@ class Block:
 
     @__invalidate_calculated_hash
     def set_prev_hash(self, prev_hash):
-        self.header['prev_hash'] = prev_hash
+        self.prev_hash = prev_hash
 
     @__invalidate_calculated_hash
     def set_timestamp(self, timestamp):
-        self.header['timestamp'] = timestamp
+        self.timestamp = timestamp
 
     @__invalidate_calculated_hash
     def add_nonce(self):
-        self.header['nonce'] += 1
+        self.nonce += 1
     
     @__invalidate_calculated_hash
     def set_difficulty(self, difficulty):
-        self.header['difficulty'] = difficulty
-
-    def get_hash(self):
-        return self.hash_given
+        self.difficulty = difficulty
 
     def get_difficulty(self):
-        return self.header['difficulty']
+        return self.difficulty
 
     def get_prev_hash(self):
-        return self.header['prev_hash']
+        return self.prev_hash
     
     def get_nonce(self):
-        return self.header['nonce']
+        return self.nonce
     
     def get_timestamp(self):
-        return self.header['timestamp']
+        return self.timestamp
     
     def get_entries_amount(self):
-        return self.header['entries_amount'] 
+        return self.entries_amount
     
     def get_entries(self):
         return self.entries
     
     def get_day(self):
-        return self.header['timestamp'].strftime(DATE_FORMAT)
-
-    def add_entry(self, entry):
-        self.entries.append(entry)
-        self.header['entries_amount'] += 1
+        return self.timestamp.strftime(DATE_FORMAT)
 
     def serialize_into_dict(self):
-        return {'hash': self.hash(), 
+        return {'hash': self.compute_hash(), 
                 'prev_hash': self.get_prev_hash(), 
                 'nonce': self.get_nonce(), 
                 'timestamp': str(self.get_timestamp()), 
@@ -102,27 +97,26 @@ class Block:
     @classmethod
     def deserialize(cls, json_to_deserialize):
         json_data = json.loads(json_to_deserialize)
-        header = {
-                    'prev_hash': int(json_data['prev_hash']), 
-                    'nonce': int(json_data['nonce']),
-                    'timestamp': datetime.strptime(json_data['timestamp'], FULL_DATE_FORMAT),
-                    'entries_amount': int(json_data['entries_amount']),
-                    'difficulty': int(json_data['difficulty'])
-                }
-        entries = json_data['entries'].split('-')
-        return cls(entries, header=header, hash_received=int(json_data['hash']))
+        prev_hash = int(json_data['prev_hash'])
+        nonce = int(json_data['nonce'])
+        timestamp = datetime.strptime(json_data['timestamp'], FULL_DATE_FORMAT)
+        difficulty = int(json_data['difficulty'])
+        entries = tuple(json_data['entries'].split('-'))
+        hash_received = int(json_data['hash'])
+        return cls(entries, prev_hash=prev_hash, nonce=nonce, timestamp=timestamp, difficulty=difficulty,
+        hash_received=hash_received)
 
     def __str__(self):
         entries = ",".join(self.entries)
         return f"""
-        'block_hash': {self.hash()}
+        'block_hash': {self.compute_hash()}
         
         'header': {{
-            'prev_hash':{self.header['prev_hash']}
-            'nonce': {self.header['nonce']}
-            'timestamp': {self.header['timestamp']}
-            'entries_amount': {self.header['entries_amount']}
-            'difficulty': {self.header['difficulty']}
+            'prev_hash':{self.prev_hash}
+            'nonce': {self.nonce}
+            'timestamp': {self.timestamp}
+            'entries_amount': {self.entries_amount}
+            'difficulty': {self.difficulty}
         }}
         
         'entries': [

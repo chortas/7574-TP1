@@ -2,6 +2,7 @@ import logging
 from multiprocessing import Queue
 from queue import Empty
 from threading import Thread
+from copy import copy
 
 from miner import Miner
 from difficulty_adjuster import DifficultyAdjuster
@@ -34,7 +35,8 @@ class MinerManager(Thread):
                 block.set_difficulty(self.difficulty_adjuster.get_difficulty())
                 queues_to_send = self.miner_block_queues[:]
                 for block_queue in queues_to_send:
-                    block_queue.put(block)
+                    logging.info("[MINER_MANAGER] Puting block in queue...")
+                    block_queue.put(copy(block))
                 self.__receive_results() #block until all results come back from blockchain
             except Empty:
                 self.__stop()

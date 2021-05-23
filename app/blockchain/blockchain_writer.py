@@ -12,7 +12,7 @@ class BlockchainWriter:
     
     def write_block(self, block):
         # file with hash and all information from block
-        hash_file_name = str(block.hash()) + '.csv'
+        hash_file_name = str(block.compute_hash()) + '.csv'
         self.__write_hash_file_safe(hash_file_name, block)
 
         # file with hash and timestamp by block
@@ -52,5 +52,5 @@ class BlockchainWriter:
             if not exists:
                 writer.writeheader()
 
-            writer.writerow({'hash': block.hash(), 'timestamp': block.get_timestamp()})
+            writer.writerow({'hash': block.compute_hash(), 'timestamp': block.get_timestamp()})
             

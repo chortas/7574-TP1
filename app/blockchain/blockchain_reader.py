@@ -73,21 +73,19 @@ class BlockchainReader(Thread):
             return None
 
         header = {}
-        entries = []
+        entries = ()
 
         with open(hash_file_name, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                header = {
-                    'prev_hash': int(row['prev_hash']), 
-                    'nonce': int(row['nonce']),
-                    'timestamp': datetime.strptime(row['timestamp'], FULL_DATE_FORMAT),
-                    'entries_amount': int(row['entries_amount']),
-                    'difficulty': int(row['difficulty'])
-                }
-                entries = row['entries'].split('-')
+                prev_hash = int(row['prev_hash'])
+                nonce = int(row['nonce'])
+                timestamp = datetime.strptime(row['timestamp'], FULL_DATE_FORMAT)
+                entries_amount = int(row['entries_amount'])
+                difficulty = int(row['difficulty'])
+                entries = tuple(row['entries'].split('-'))
 
-        return Block(entries, header)
+        return Block(entries, prev_hash=prev_hash, nonce=nonce, timestamp=timestamp, difficulty=difficulty)
 
     def __get_blocks_between_minute_interval(self, first_endpoint):
         try:
