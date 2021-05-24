@@ -83,19 +83,22 @@ class ApiHandler():
 
     def __handle_get_query(self, client_socket, op):
         parameter_received = client_socket.recv_data()
-
         query_socket = Socket()
-        query_socket.connect(self.query_host, self.query_port)
+        try:
+            query_socket.connect(self.query_host, self.query_port)
 
-        query_socket.send_data(op)
-        query_socket.recv_data() #ack
-        query_socket.send_data(parameter_received)
+            query_socket.send_data(op)
+            query_socket.recv_data() #ack
+            query_socket.send_data(parameter_received)
 
-        block = query_socket.recv_data()
+            block = query_socket.recv_data()
+            return json.dumps({"status_code": 200, "block": block})
 
-        query_socket.close()
+        except OSError as e:
+            logging.info(f"[API_HANDLER] Error operating with socket: {e}")
 
-        return json.dumps({"status_code": 200, "block": block})
+        finally:
+            query_socket.close()
     
     def __handle_stats_query(self):
         stats = self.stats.read_stats()
