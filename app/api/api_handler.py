@@ -4,6 +4,7 @@ from threading import Thread
 from queue import Queue
 
 from sockets.socket import Socket
+from socket import *
 from block_builder import BlockBuilder
 from stats.stats_reader import StatsReader
 from common.utils import *
@@ -33,46 +34,46 @@ class ApiHandler():
 
     def run(self):
         while not self.graceful_stopper.has_been_stopped():
+            client_socket = None
             try:
                 client_socket = self.socket.accept_new_connection()
                 self.__handle_client_connection(client_socket)
+            except timeout:
+                if self.graceful_stopper.has_been_stopped():    
+                    self.__stop()
+                    break
             except OSError:
-                self.__stop()
+                logging.info("[API_HANDLER] Error operating with socket")
+            finally:
+                if client_socket != None:
+                    client_socket.close()
         logging.info("[API_HANDLER] End run")
 
     def __stop(self):
-        self.graceful_stopper.exit_gracefully()
+        logging.info("[API_HANDLER] Stop execution")
         empty_queue(self.chunk_queue)
         empty_queue(self.block_queue)
         self.block_builder.stop()
     
     def __handle_client_connection(self, client_socket):
-        try:
-            op = client_socket.recv_data()
-            client_socket.send_data(json.dumps({"ack": True})) #ack
+        op = client_socket.recv_data()
+        client_socket.send_data(json.dumps({"ack": True})) #ack
 
-            response = None
+        response = None
 
-            if op == ADD_CHUNK_CODE_OP:
-                response = self.__handle_add_chunk(client_socket)
+        if op == ADD_CHUNK_CODE_OP:
+            response = self.__handle_add_chunk(client_socket)
                 
-            elif op == GET_BLOCK_BY_HASH_OP or op == GET_BLOCKS_BY_TIMESTAMP_OP:
-                response = self.__handle_get_query(client_socket, op)            
+        elif op == GET_BLOCK_BY_HASH_OP or op == GET_BLOCKS_BY_TIMESTAMP_OP:
+            response = self.__handle_get_query(client_socket, op)            
 
-            elif op == GET_STATS_OP:
-                response = self.__handle_stats_query()
+        elif op == GET_STATS_OP:
+            response = self.__handle_stats_query()
 
-            else:
-                response = self.__handle_unknown_query()
+        else:
+            response = self.__handle_unknown_query()
 
-            client_socket.send_data(response)
-        
-        except OSError:
-            logging.info(f"[API_HANDLER] Error while reading socket")
-            self.__stop()
-
-        finally:
-            client_socket.close()
+        client_socket.send_data(response)
 
     def __handle_add_chunk(self, client_socket):
         chunk = client_socket.recv_data()

@@ -1,5 +1,6 @@
 from multiprocessing import Process
 from queue import Empty
+from socket import *
 import json
 import logging
 
@@ -11,7 +12,7 @@ class Miner(Process):
     """Class that mines a block"""
 
     def __init__(self, block_queue, stop_queue, result_queue, miner_id, 
-    blockchain_host, blockchain_port, stats, ack_stop_queue):
+    blockchain_host, blockchain_port, stats, ack_stop_queue, kill_queue):
         Process.__init__(self)
         self.cryptographic_solver = CryptographicSolver()
         self.block_queue = block_queue
@@ -22,29 +23,56 @@ class Miner(Process):
         self.blockchain_port = blockchain_port
         self.stats = stats
         self.ack_stop_queue = ack_stop_queue
-        self.should_stop = False
+        self.kill_queue = kill_queue
 
-    def stop(self):
-        self.should_stop = True
+    def run(self):
+        while self.kill_queue.empty():
+            miner_socket = None
+            try:
+                block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
+                logging.info(f"[MINER #{self.id}] Lei un bloque")
+                is_mine_ok = self.__mine(block)
+                logging.info(f"[MINER #{self.id}] Mine")
+                if is_mine_ok:
+                    miner_socket = Socket()
+                    self.__handle_result(block, miner_socket)     
+            except (Empty, timeout):
+                if not self.kill_queue.empty():
+                    self.__stop()
+                    logging.info(f"[MINER #{self.id}] Entre al lugar correcto")
+                    break
+            except OSError:
+                logging.info(f"[MINER #{self.id}] Error while operating with socket")
+            finally: 
+                if miner_socket != None:
+                    miner_socket.close()
+        logging.info(f"[MINER #{self.id}] End run")
+
+    def __stop(self):
+        logging.info(f"[MINER #{self.id}] I was called to stop")
+        empty_queue(self.kill_queue)
         empty_queue(self.block_queue)
         empty_queue(self.stop_queue)
         empty_queue(self.result_queue)
         empty_queue(self.ack_stop_queue)
 
-    def run(self):
-        while not self.should_stop:
-            try:
-                block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
-                self.__mine_block_and_handle_result(block)     
-            except (Empty, OSError):
-                self.stop()
-        logging.info("[MINER] End run")
+    def __mine(self, block):
+        block.timestamp = get_and_format_datetime_now()
+        while not self.cryptographic_solver.solve(block, block.compute_hash()) and self.stop_queue.empty() and self.kill_queue.empty():
+            block.add_nonce()
+            block.timestamp = get_and_format_datetime_now()
+        
+        if not self.stop_queue.empty():
+            logging.info(f"[MINER #{self.id}] I was asked to stop mining")
+            self.stop_queue.get()
+            self.result_queue.put((None, self.id))
+            self.stats.write_stat(self.id, False)
+            self.ack_stop_queue.put(True)
+            return False
+        
+        return kill_queue.empty()
 
-    def __mine_block_and_handle_result(self, block):
-        is_mine_ok = self.__mine(block)
-        if not is_mine_ok:
-            return
-        miner_socket = Socket()
+    def __handle_result(self, block, miner_socket):
         miner_socket.connect(self.blockchain_host, self.blockchain_port)
         block_serialized = block.serialize()
                 
@@ -60,32 +88,14 @@ class Miner(Process):
         else:
             self.__handle_failed_result()
 
-        miner_socket.close()
-
-    def __mine(self, block):
-        block.timestamp = get_and_format_datetime_now()
-        while not self.cryptographic_solver.solve(block, block.compute_hash()) and self.stop_queue.empty():
-            block.add_nonce()
-            block.timestamp = get_and_format_datetime_now()
-        
-        if not self.stop_queue.empty():
-            logging.info(f"[MINER] I was asked to stop and i'm the miner {self.id}")
-            self.stop_queue.get()
-            self.result_queue.put((None, self.id))
-            self.stats.write_stat(self.id, False)
-            self.ack_stop_queue.put(True)
-            return False
-        
-        return True
-
     def __handle_ok_result(self, hash_obtained):
-        logging.info(f"[MINER] I'm the miner {self.id} and I could mine")
-        logging.info(f"[MINER] Result from blockchain: {hash_obtained}")
+        logging.info(f"[MINER #{self.id}] I could mine")
+        logging.info(f"[MINER #{self.id}] Result from blockchain: {hash_obtained}")
         self.result_queue.put((hash_obtained, self.id))
         self.stats.write_stat(self.id, True)
 
     def __handle_failed_result(self):
-        logging.info(f"[MINER] I'm the miner {self.id} and I couldn't mine")
+        logging.info(f"[MINER #{self.id}] I couldn't mine")
         self.ack_stop_queue.put(True)
         self.result_queue.put((None, self.id))
         self.stats.write_stat(self.id, False)

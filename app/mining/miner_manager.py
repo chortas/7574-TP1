@@ -18,8 +18,9 @@ class MinerManager(Thread):
         self.stop_queues = [Queue() for _ in range(n_miners)]
         self.result_queue = Queue()
         self.ack_stop_queue = Queue()
+        self.kill_queues = [Queue() for _ in range(n_miners)]
         self.miners = [Miner(self.miner_block_queues[i], self.stop_queues[i], self.result_queue, 
-        i, blockchain_host, blockchain_port, stats, self.ack_stop_queue) 
+        i, blockchain_host, blockchain_port, stats, self.ack_stop_queue, self.kill_queues[i]) 
         for i in range(n_miners)]
         self.prev_hash = 0
         self.difficulty_adjuster = DifficultyAdjuster()
@@ -32,18 +33,18 @@ class MinerManager(Thread):
             try:
                 block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
                 block.prev_hash = self.prev_hash
-                block.difficulty = self.difficulty_adjuster.get_difficulty()
+                block.difficulty = self.difficulty_adjuster.difficulty
                 queues_to_send = self.miner_block_queues[:]
                 for block_queue in queues_to_send:
                     logging.info("[MINER_MANAGER] Puting block in queue...")
                     block_queue.put(copy(block))
                 self.__receive_results() #block until all results come back from blockchain
             except Empty:
-                self.__stop()
+                if self.graceful_stopper.has_been_stopped():
+                    self.__stop()
         logging.info("[MINER_MANAGER] End run")
     
     def __stop(self):
-        self.graceful_stopper.exit_gracefully()
         for queue in self.miner_block_queues:
             empty_queue(queue)
         for queue in self.stop_queues:
@@ -51,8 +52,8 @@ class MinerManager(Thread):
         empty_queue(self.result_queue)
         empty_queue(self.ack_stop_queue)
         empty_queue(self.block_queue)
-        for miner in self.miners:
-            miner.stop()
+        for queue in self.kill_queues:
+            queue.put(True)
 
     def __start_threads(self):
         for i in range(self.n_miners):

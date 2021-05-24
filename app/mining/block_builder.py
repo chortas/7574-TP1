@@ -19,6 +19,7 @@ class BlockBuilder(Thread):
         self.should_stop = False
 
     def stop(self):
+        logging.info("[BLOCK_BUILDER] I was called to stop")
         self.should_stop = True
         empty_queue(self.chunk_queue)
         empty_queue(self.block_queue)
@@ -36,10 +37,11 @@ class BlockBuilder(Thread):
                 if len(self.chunks) != 0:
                     logging.info("[BLOCK_BUILDER] Timeout has expired and the block will be sent anyway")
                     self.__build_and_send_block()
+                if self.should_stop:
+                    break
         logging.info("[BLOCK_BUILDER] End run")
 
     def __build_and_send_block(self):
         block = Block(self.chunks)
         self.chunks = []
         self.block_queue.put(block)
-
