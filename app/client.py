@@ -99,9 +99,8 @@ def test_get_stats():
     print(result)
 
 def test_difficulty():
-    client_socket = Socket()
-    client_socket.connect(API_HOST, API_PORT)
     for i in range(257):
+        print(f"Sending a block attempt {i}")
         test_add_chunks_until_limit()
 
 def get_stats(client_socket):
