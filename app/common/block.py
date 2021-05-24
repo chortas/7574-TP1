@@ -15,80 +15,78 @@ class Block:
 
         if (len(entries) > MAX_ENTRIES_AMOUNT):
             raise ValueError("Exceeding chunk size")
-        self.prev_hash = prev_hash
-        self.nonce = nonce
-        self.timestamp = timestamp
-        self.entries_amount = len(entries)
-        self.difficulty = difficulty
-        self.entries = entries
+        self._prev_hash = prev_hash
+        self._nonce = nonce
+        self._timestamp = timestamp
+        self._difficulty = difficulty
+        self._entries = entries
         self.hash_calculated = hash_received
             
     def compute_hash(self):
         if self.hash_calculated == None:
-            logging.info("Calculating hash...")
             header = {
             'prev_hash': self.prev_hash,
             'nonce': self.nonce,
             'timestamp': self.timestamp,
-            'entries_amount': self.entries_amount,
+            'entries_amount': len(self.entries),
             'difficulty': self.difficulty
             }
             self.hash_calculated = int(sha256(repr(header).encode('utf-8') + repr(self.entries).encode('utf-8')).hexdigest(), 16)
-        else:
-            logging.info("Not calculating hash!")
         return self.hash_calculated
 
-    def __invalidate_calculated_hash(fn):
-        def wrapper(self, *args, **kwargs):
-            self.hash_calculated = None
-            fn(self, *args, **kwargs)
-        return wrapper
+    def __invalidate_calculated_hash(self):
+        self.hash_calculated = None
 
-    @__invalidate_calculated_hash
-    def set_prev_hash(self, prev_hash):
-        self.prev_hash = prev_hash
+    @property
+    def prev_hash(self):
+        return self._prev_hash
+          
+    @prev_hash.setter
+    def prev_hash(self, prev_hash):
+        self._prev_hash = prev_hash
+        self.__invalidate_calculated_hash()
 
-    @__invalidate_calculated_hash
-    def set_timestamp(self, timestamp):
-        self.timestamp = timestamp
+    @property
+    def timestamp(self):
+        return self._timestamp
 
-    @__invalidate_calculated_hash
+    @timestamp.setter
+    def timestamp(self, timestamp):
+        self._timestamp = timestamp
+        self.__invalidate_calculated_hash()
+
+    @property
+    def nonce(self):
+        return self._nonce
+
     def add_nonce(self):
-        self.nonce += 1
-    
-    @__invalidate_calculated_hash
-    def set_difficulty(self, difficulty):
-        self.difficulty = difficulty
+        self._nonce += 1
+        self.__invalidate_calculated_hash()
 
-    def get_difficulty(self):
-        return self.difficulty
+    @property
+    def difficulty(self):
+        return self._difficulty
+    
+    @difficulty.setter
+    def difficulty(self, difficulty):
+        self._difficulty = difficulty
+        self.__invalidate_calculated_hash()
+    
+    @property
+    def entries(self):
+        return self._entries
 
-    def get_prev_hash(self):
-        return self.prev_hash
-    
-    def get_nonce(self):
-        return self.nonce
-    
-    def get_timestamp(self):
-        return self.timestamp
-    
-    def get_entries_amount(self):
-        return self.entries_amount
-    
-    def get_entries(self):
-        return self.entries
-    
     def get_day(self):
         return self.timestamp.strftime(DATE_FORMAT)
 
     def serialize_into_dict(self):
         return {'hash': self.compute_hash(), 
-                'prev_hash': self.get_prev_hash(), 
-                'nonce': self.get_nonce(), 
-                'timestamp': str(self.get_timestamp()), 
-                'entries_amount': self.get_entries_amount(), 
-                'difficulty': self.get_difficulty(), 
-                'entries': "-".join(self.get_entries())
+                'prev_hash': self.prev_hash, 
+                'nonce': self.nonce, 
+                'timestamp': str(self.timestamp), 
+                'entries_amount': len(self.entries), 
+                'difficulty': self.difficulty, 
+                'entries': "-".join(self.entries)
                 }
 
     def serialize(self):
@@ -107,7 +105,7 @@ class Block:
         hash_received=hash_received)
 
     def __str__(self):
-        entries = ",".join(self.entries)
+        entries = "-".join(self.entries)
         return f"""
         'block_hash': {self.compute_hash()}
         
@@ -115,7 +113,7 @@ class Block:
             'prev_hash':{self.prev_hash}
             'nonce': {self.nonce}
             'timestamp': {self.timestamp}
-            'entries_amount': {self.entries_amount}
+            'entries_amount': {len(entries)}
             'difficulty': {self.difficulty}
         }}
         

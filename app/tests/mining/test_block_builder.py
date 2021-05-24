@@ -29,7 +29,7 @@ class TestBlockBuilder:
         self.chunk_queue.put('256')
         entries.append('256')
         block = self.block_queue.get()
-        assert block.get_entries() == entries
+        assert block.entries == entries
 
     def test_create_two_blocks(self):
         entries = []
@@ -40,7 +40,7 @@ class TestBlockBuilder:
         self.chunk_queue.put('256')
         entries.append('256')
         block = self.block_queue.get()
-        assert block.get_entries() == entries
+        assert block.entries == entries
         
         other_entries = []
         for i in range(257, 257+255):
@@ -50,7 +50,7 @@ class TestBlockBuilder:
         self.chunk_queue.put(str(257+255))
         other_entries.append(str(257+255))
         other_block = self.block_queue.get()
-        assert other_block.get_entries() == other_entries
+        assert other_block.entries == other_entries
 
     def test_create_block_if_more_than_timeout(self):
         for i in range(5): 
@@ -59,5 +59,5 @@ class TestBlockBuilder:
         sleep(15)
         block = self.block_queue.get()
         assert block != None
-        assert block.get_entries() == ['0', '1', '2', '3', '4']
+        assert block.entries == ['0', '1', '2', '3', '4']
 

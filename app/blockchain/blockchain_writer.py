@@ -52,5 +52,5 @@ class BlockchainWriter:
             if not exists:
                 writer.writeheader()
 
-            writer.writerow({'hash': block.compute_hash(), 'timestamp': block.get_timestamp()})
+            writer.writerow({'hash': block.compute_hash(), 'timestamp': block.timestamp})
             

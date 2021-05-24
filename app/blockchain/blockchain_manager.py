@@ -55,5 +55,5 @@ class BlockchainManager(Thread):
         return False
     
     def __is_block_valid(self, block):
-        return block.get_prev_hash() == self.last_block_hash and self.cryptographic_solver.solve(block, block.compute_hash())
+        return block.prev_hash == self.last_block_hash and self.cryptographic_solver.solve(block, block.compute_hash())
     

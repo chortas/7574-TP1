@@ -31,8 +31,8 @@ class MinerManager(Thread):
         while not self.graceful_stopper.has_been_stopped():
             try:
                 block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
-                block.set_prev_hash(self.prev_hash)
-                block.set_difficulty(self.difficulty_adjuster.get_difficulty())
+                block.prev_hash = self.prev_hash
+                block.difficulty = self.difficulty_adjuster.get_difficulty()
                 queues_to_send = self.miner_block_queues[:]
                 for block_queue in queues_to_send:
                     logging.info("[MINER_MANAGER] Puting block in queue...")

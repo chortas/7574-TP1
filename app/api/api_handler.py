@@ -65,7 +65,6 @@ class ApiHandler():
             else:
                 response = self.__handle_unknown_query()
 
-            logging.info(f"[API_HANDLER] Sending response to client: {response}")
             client_socket.send_data(response)
         
         except OSError:

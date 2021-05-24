@@ -63,10 +63,10 @@ class Miner(Process):
         miner_socket.close()
 
     def __mine(self, block):
-        block.set_timestamp(get_and_format_datetime_now())
+        block.timestamp = get_and_format_datetime_now()
         while not self.cryptographic_solver.solve(block, block.compute_hash()) and self.stop_queue.empty():
             block.add_nonce()
-            block.set_timestamp(get_and_format_datetime_now())
+            block.timestamp = get_and_format_datetime_now()
         
         if not self.stop_queue.empty():
             logging.info(f"[MINER] I was asked to stop and i'm the miner {self.id}")
