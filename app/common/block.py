@@ -113,7 +113,7 @@ class Block:
             'prev_hash':{self.prev_hash}
             'nonce': {self.nonce}
             'timestamp': {self.timestamp}
-            'entries_amount': {len(entries)}
+            'entries_amount': {len(self.entries)}
             'difficulty': {self.difficulty}
         }}
         

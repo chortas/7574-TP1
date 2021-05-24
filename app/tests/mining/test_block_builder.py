@@ -13,6 +13,9 @@ class TestBlockBuilder:
         self.stop_flag = False
         self.block_builder.start()
 
+    def teardown_method(self):
+        self.block_builder.stop()
+
     def test_doesnt_create_block_if_less_than_maximum(self):
         self.stop_flag = False
         self.chunk_queue.put("1")
