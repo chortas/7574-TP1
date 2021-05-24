@@ -2,6 +2,7 @@ import json
 import logging
 from threading import Thread
 from queue import Queue, Empty
+from socket import *
 
 from sockets.socket import Socket
 from blockchain_reader import BlockchainReader
@@ -25,11 +26,18 @@ class QueryManager(Thread):
     def run(self):
         self.__start_threads()
         while not self.graceful_stopper.has_been_stopped():
+            client_socket = None
             try:
                 client_socket = self.socket.accept_new_connection()
                 self.__handle_query_connection(client_socket)
-            except OSError:
-                self.__stop()
+            except timeout:
+                if self.graceful_stopper.has_been_stopped():
+                    self.__stop()
+            except OSError as e:
+                logging.info(f"[QUERY_MANAGER] Error while operating with sockets: {e}")
+            finally:
+                if client_socket != None:
+                    client_socket.close()
         logging.info("[QUERY_MANAGER] End run")
             
     def __start_threads(self):
@@ -44,36 +52,28 @@ class QueryManager(Thread):
                 client_socket = result["socket"]
                 client_socket.send_data(json.dumps(result["result"]))
                 client_socket.close()   
-            except (Empty, OSError):
-                self.__stop()
-        logging.info("[QUERY_MANAGER] End receive_results")
+            except (Empty, timeout):
+                if self.graceful_stopper.has_been_stopped():
+                    self.__stop()
+            except OSError as e:
+                logging.info(f"[QUERY_MANAGER] Error while operating with sockets: {e}")
 
     def __stop(self):
-        self.graceful_stopper.exit_gracefully()
+        logging.info("[QUERY_MANAGER] Stop execution")
         empty_queue(self.request_queue)
         empty_queue(self.result_queue)
         for i in range(self.n_readers):
             self.blockchain_readers[i].stop()
 
     def __handle_query_connection(self, client_socket):
-        """
-        Read message from a specific miner socket and closes the socket
-        If a problem arises in the communication with the client, the
-        miner socket will also be closed
-        """
-        try:
-            op = client_socket.recv_data()
+        op = client_socket.recv_data()
 
-            client_socket.send_data(json.dumps({"ack": True})) #ack
+        client_socket.send_data(json.dumps({"ack": True})) #ack
 
-            if op == GET_BLOCK_BY_HASH_OP:
-                hash_received = client_socket.recv_data()
-                self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
+        if op == GET_BLOCK_BY_HASH_OP:
+            hash_received = client_socket.recv_data()
+            self.request_queue.put({"operation": op, "hash": hash_received, "socket": client_socket})
 
-            elif op == GET_BLOCKS_BY_TIMESTAMP_OP:
-                timestamp_received = client_socket.recv_data()
-                self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})
-
-        except OSError:
-            logging.info(f"[QUERY_MANAGER] Error while reading socket")
-            self.__stop()
+        elif op == GET_BLOCKS_BY_TIMESTAMP_OP:
+            timestamp_received = client_socket.recv_data()
+            self.request_queue.put({"operation": op, "timestamp": timestamp_received, "socket": client_socket})

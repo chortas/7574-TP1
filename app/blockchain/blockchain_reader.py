@@ -26,10 +26,12 @@ class BlockchainReader(Thread):
                 request = self.request_queue.get(timeout=OPERATION_TIMEOUT)
                 self.__handle_request(request)
             except Empty:
-                self.stop()
+                if self.should_stop:
+                    break
         logging.info("[BLOCKCHAIN_READER] End run")
         
     def stop(self):
+        logging.info("[BLOCKCHAIN_READER] I was called to stop")
         self.should_stop = True
         empty_queue(self.result_queue)
         empty_queue(self.request_queue)

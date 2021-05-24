@@ -10,8 +10,5 @@ class GracefulStopper:
     def exit_gracefully(self, signum, frame):
         self.stop = True
 
-    def exit_gracefully(self):
-        self.stop = True
-    
     def has_been_stopped(self):
         return self.stop
