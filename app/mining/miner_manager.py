@@ -36,7 +36,6 @@ class MinerManager(Thread):
                 block.difficulty = self.difficulty_adjuster.difficulty
                 queues_to_send = self.miner_block_queues[:]
                 for block_queue in queues_to_send:
-                    logging.info("[MINER_MANAGER] Puting block in queue...")
                     block_queue.put(copy(block))
                 self.__receive_results() #block until all results come back from blockchain
             except Empty:

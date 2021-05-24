@@ -15,8 +15,6 @@ class StatsWriter:
                 writer.writerow({'id_miner': id_miner, 'n_succeeded': 0, "n_failed": 0})
     
     def add_stat(self, id_miner, is_succeeded):
-        logging.info("[STATS_WRITER] Llamaron a stats writer")
-
         with open(self.file_name, 'r') as stats_file_reader:
             reader = csv.reader(stats_file_reader)
             rows = list(reader)[1:]

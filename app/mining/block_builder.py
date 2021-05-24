@@ -19,14 +19,12 @@ class BlockBuilder(Thread):
         self.should_stop = False
 
     def stop(self):
-        logging.info("[BLOCK_BUILDER] I was called to stop")
         self.should_stop = True
         empty_queue(self.chunk_queue)
         empty_queue(self.block_queue)
     
     def run(self):
         while not self.should_stop:
-            chunk = None
             try:
                 chunk = self.chunk_queue.get(timeout=self.timeout_chunk) 
                 self.chunks.append(chunk)

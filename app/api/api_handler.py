@@ -42,15 +42,14 @@ class ApiHandler():
                 if self.graceful_stopper.has_been_stopped():    
                     self.__stop()
                     break
-            except OSError:
-                logging.info("[API_HANDLER] Error operating with socket")
+            except OSError as e:
+                logging.info(f"[API_HANDLER] Error operating with socket: {e}")
             finally:
                 if client_socket != None:
                     client_socket.close()
         logging.info("[API_HANDLER] End run")
 
     def __stop(self):
-        logging.info("[API_HANDLER] Stop execution")
         empty_queue(self.chunk_queue)
         empty_queue(self.block_queue)
         self.block_builder.stop()
@@ -84,7 +83,6 @@ class ApiHandler():
 
     def __handle_get_query(self, client_socket, op):
         parameter_received = client_socket.recv_data()
-        logging.info(f"[API_HANDLER] Parameter received: {parameter_received}")
 
         query_socket = Socket()
         query_socket.connect(self.query_host, self.query_port)

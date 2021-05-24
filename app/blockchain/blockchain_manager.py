@@ -29,8 +29,8 @@ class BlockchainManager(Thread):
             except timeout:
                 if self.graceful_stopper.has_been_stopped():
                     break
-            except OSError:
-                logging.info(f"[BLOCKCHAIN_MANAGER] Error while operating with socket")
+            except OSError as e:
+                logging.info(f"[BLOCKCHAIN_MANAGER] Error while operating with socket: {e}")
             finally:
                 if miner_socket != None:
                     miner_socket.close()

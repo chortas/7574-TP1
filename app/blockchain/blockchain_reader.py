@@ -31,14 +31,12 @@ class BlockchainReader(Thread):
         logging.info("[BLOCKCHAIN_READER] End run")
         
     def stop(self):
-        logging.info("[BLOCKCHAIN_READER] I was called to stop")
         self.should_stop = True
         empty_queue(self.result_queue)
         empty_queue(self.request_queue)
 
     def __handle_request(self, request):
         operation = request["operation"]
-        logging.info(f"[BLOCKCHAIN_READER] Operation received: {operation}")
             
         if operation == GET_BLOCK_BY_HASH_OP:
             hash_received = request["hash"]

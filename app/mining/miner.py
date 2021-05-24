@@ -30,26 +30,22 @@ class Miner(Process):
             miner_socket = None
             try:
                 block = self.block_queue.get(timeout=OPERATION_TIMEOUT)
-                logging.info(f"[MINER #{self.id}] Lei un bloque")
                 is_mine_ok = self.__mine(block)
-                logging.info(f"[MINER #{self.id}] Mine")
                 if is_mine_ok:
                     miner_socket = Socket()
                     self.__handle_result(block, miner_socket)     
             except (Empty, timeout):
                 if not self.kill_queue.empty():
                     self.__stop()
-                    logging.info(f"[MINER #{self.id}] Entre al lugar correcto")
                     break
-            except OSError:
-                logging.info(f"[MINER #{self.id}] Error while operating with socket")
+            except OSError as e:
+                logging.info(f"[MINER #{self.id}] Error while operating with socket: {e}")
             finally: 
                 if miner_socket != None:
                     miner_socket.close()
         logging.info(f"[MINER #{self.id}] End run")
 
     def __stop(self):
-        logging.info(f"[MINER #{self.id}] I was called to stop")
         empty_queue(self.kill_queue)
         empty_queue(self.block_queue)
         empty_queue(self.stop_queue)
@@ -70,7 +66,7 @@ class Miner(Process):
             self.ack_stop_queue.put(True)
             return False
         
-        return kill_queue.empty()
+        return self.kill_queue.empty()
 
     def __handle_result(self, block, miner_socket):
         miner_socket.connect(self.blockchain_host, self.blockchain_port)

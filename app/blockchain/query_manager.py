@@ -35,9 +35,6 @@ class QueryManager(Thread):
                     self.__stop()
             except OSError as e:
                 logging.info(f"[QUERY_MANAGER] Error while operating with sockets: {e}")
-            finally:
-                if client_socket != None:
-                    client_socket.close()
         logging.info("[QUERY_MANAGER] End run")
             
     def __start_threads(self):
@@ -47,19 +44,21 @@ class QueryManager(Thread):
     
     def __receive_results(self):
         while not self.graceful_stopper.has_been_stopped():
+            client_socket = None
             try:
                 result = self.result_queue.get(timeout=OPERATION_TIMEOUT)
                 client_socket = result["socket"]
                 client_socket.send_data(json.dumps(result["result"]))
-                client_socket.close()   
             except (Empty, timeout):
                 if self.graceful_stopper.has_been_stopped():
                     self.__stop()
             except OSError as e:
                 logging.info(f"[QUERY_MANAGER] Error while operating with sockets: {e}")
+            finally:
+                if client_socket != None:
+                    client_socket.close()
 
     def __stop(self):
-        logging.info("[QUERY_MANAGER] Stop execution")
         empty_queue(self.request_queue)
         empty_queue(self.result_queue)
         for i in range(self.n_readers):
